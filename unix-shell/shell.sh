@@ -1,1 +1,1 @@
-. ../lib/swc-shell-split-window/swc-shell-split-window.sh
+lib/swc-shell-split-window/
