@@ -1,0 +1,3 @@
+[submodule "lib/swc-shell-split-window"]
+	path = lib/swc-shell-split-window
+	url = git@github.com:rgaiacs/swc-shell-split-window.git
