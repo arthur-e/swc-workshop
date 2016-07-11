@@ -203,6 +203,57 @@ Same for less-than-or-equal, greater-than, and greater-than-or-equal.
 1 >= -3
 ```
 
+### Variables and Assignment
+
+When we want R to remember a value or store the result of a calculation, we can give that value or result a name.
+**The name itself is called a variable, because the name could be given to any other value. We assign values to variables using the assignment operator.**
+
+```r
+x <- 1/2
+```
+
+You can think of the assignment operator as an arrow from the value to the variable; it "points" where to put the value.
+Note that when we use assignment to store a variable, the result isn't printed to the screen.
+We can request R to read the result back to us when we ask R for the value of the named variable.
+
+```r
+x
+```
+
+If we look in the **Environment** tab, we can see the value of our variable `x` at any time.
+We can now use `x` in place of its value in any calculation that expects a number.
+
+```r
+log(x)
+```
+
+**We can re-assign variables to new values.**
+
+```r
+x <- 100
+x
+```
+
+We can also use the value of a variable to update that same variable.
+**More generally, the right side of an assignment expression can be any valid R expression.**
+
+```r
+x <- (x + 1)
+x
+```
+
+#### Variable Names
+
+There are some restrictions on the names we can use for variables.
+**Variable names can contain only letters, numbers, underscores, and periods.**
+Here are some examples:
+
+* `periods.between.words`
+* `underscores_between_words`
+* `camelCaseVariableNames`
+
+There are also some guidelines...
+
 ## Conclusion and Summary
 
 **Now you should be familiar with the following:**
