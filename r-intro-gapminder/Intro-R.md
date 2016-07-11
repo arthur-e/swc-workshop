@@ -212,12 +212,28 @@ When we want R to remember a value or store the result of a calculation, we can 
 x <- 1/2
 ```
 
+<!--TODO for advanced version of lesson: Discuss alternative equal sign as assignment operator and edge cases:
+log(x=5)
+x
+log(x <- 5)
+x
+-->
+
 You can think of the assignment operator as an arrow from the value to the variable; it "points" where to put the value.
 Note that when we use assignment to store a variable, the result isn't printed to the screen.
 We can request R to read the result back to us when we ask R for the value of the named variable.
 
 ```r
 x
+```
+
+It's important to put proper spacing around the assignment operator.
+Otherwise, it can be confusing whether you intended to type:
+
+```r
+x<-4
+x < -4 # less than -4?
+x <- 4 # or store the value -4?
 ```
 
 If we look in the **Environment** tab, we can see the value of our variable `x` at any time.
@@ -252,7 +268,7 @@ Here are some examples:
 * `underscores_between_words`
 * `camelCaseVariableNames`
 
-There are also some guidelines...
+<!--TODO for advanced: Suggestions of idiomatic R variable names-->
 
 ## Conclusion and Summary
 
