@@ -212,13 +212,6 @@ When we want R to remember a value or store the result of a calculation, we can 
 x <- 1/2
 ```
 
-<!--TODO for advanced version of lesson: Discuss alternative equal sign as assignment operator and edge cases:
-log(x=5)
-x
-log(x <- 5)
-x
--->
-
 You can think of the assignment operator as an arrow from the value to the variable; it "points" where to put the value.
 Note that when we use assignment to store a variable, the result isn't printed to the screen.
 We can request R to read the result back to us when we ask R for the value of the named variable.
@@ -268,9 +261,111 @@ Here are some examples:
 * `underscores_between_words`
 * `camelCaseVariableNames`
 
+Whatever you choose is up to you but be consistent.
+
 <!--TODO for advanced: Suggestions of idiomatic R variable names-->
 
-## Conclusion and Summary
+<!--TODO for advanced version of lesson: Discuss alternative equal sign as assignment operator and edge cases:
+log(x=5)
+x
+log(x <- 5)
+x
+-->
+
+It's also possible to use the equal sign for assignment.
+
+```r
+x = 1/2
+```
+
+However, this is much less common among R users.
+The most important thing is to be consistent in your use of one assignment operator than the other.
+There are places in R where it is less confusing to use the arrow form than than the equal sign, so the recommendation is to use the arrow form.
+
+We can determine what variables are in our environment by using the `ls()` function.
+Note that the `ls()` function takes no arguments but we still use the closed parentheses to call the function.
+
+```r
+ls()
+```
+
+**What happens if we try to call `ls` but we forget the parentheses?**
+
+```r
+ls
+```
+
+We can use the `rm()` function to delete things in our environment; this helps us "tidy up."
+
+```r
+rm(x)
+```
+
+If we want to delete everything in our environment, we can type:
+
+```r
+rm(list = ls())
+```
+
+**Why does this remove everything in our environment?**
+Hint: type `?rm` to see the help documentation on `rm()`.
+
+Here, `list` is a **keyword argument.**
+With the equal sign, we've indicated that the results of the `ls()` function should be used as the argument `list` in calling the function `rm()`.
+**When assigning values to arguments, you must use the `=` operator, not the arrow form.**
+
+Here's what NOT to do:
+
+```r
+rm(list <- ls())
+```
+
+We should pay attention when we see an error message in R.
+Usually, it contains information on how to fix a problem.
+
+## Loading Packages in R
+
+Let's look at the help documentation for the `log()` function again.
+
+```r
+?log
+```
+
+**In the curly braces by the function's name, at the top of the documentation, is the name of the package that contains this function.**
+We can see that `log()` is part of the `base` package, which is a built-in package of basic functions in R.
+**We can see what other packages are already installed with the following function.**
+
+```r
+installed.packages()
+```
+
+This output is really long and detailed.
+Luckily, in RStudio we have a "Packages" tab that has a list of our installed packages that is easier to read.
+While a package may be installed, its contents are not available for our use until it is loaded into the **namespace**, or our current environment.
+These packages are missing a checkmark in the left-most column.
+If you check one of these packages, RStudio will load that package into the environment.
+We can see that this is done with the `library()` command.
+
+```r
+library(parallel)
+```
+
+If we want to learn more about what this new package does we can use the question mark (or `help()` function) with the package's name.
+
+```r
+?parallel
+```
+
+We can install new packages using the `install.packages()` function.
+**Try installing the `reshape2` package on your computer.**
+
+```r
+install.packages('reshape2')
+```
+
+---
+
+## Checkpoint: Basic R
 
 **Now you should be familiar with the following:**
 
@@ -279,3 +374,235 @@ Here are some examples:
 * Managing your workspace in an interactive R session;
 * Use of mathematical and comparison operators in R;
 * Calling functions in R.
+
+---
+
+## Project Management with RStudio
+
+The scientific process is naturally incremental and many projects start life as random notes, some code, then a manuscript, and, eventually, everything is a bit mixed together.
+**What's wrong with organizing a project like this?**
+
+[Link to "bad layout" figure](http://swcarpentry.github.io/r-novice-gapminder/fig/bad_layout.png)
+
+* It is really hard to tell which version of your data is the original and which is modified.
+* We may have multiple versions of our results and, here, the results are mixed together making it difficult to tell them apart at a glance.
+* It is difficult to relate the correct outputs, for example, a certain graph, to the exact code that has been used to generate it.
+
+**A good project layout, on the other hand, can make your life easier in so many ways:**
+
+* It will help ensure the integrity of your data.
+* It makes it simpler to share your code with someone else.
+* It allows you to easily upload your code when submitting a manuscript for publication.
+* It makes it easier to pick the project back up after a break.
+
+### How RStudio Helps
+
+RStudio has project management built- in.
+We'll use this today to create a self-contained, reproducible project.
+
+**Challenge: Create a self-contained project in RStudio.**
+
+1. Click the "File" menu button, then "New Project".
+2. Click "New Directory".
+3. Click "Empty Project".
+4. Type in the name of the directory to store your 5. project, e.g. "my_project".
+6. Make sure that the checkbox for "Create a git repository" is selected.
+7. Click the "Create Project" button.
+
+Now, when we start R in this project directory or when we open this project in RStudio, all of our work on this project will be entirely self-contained in this directory.
+
+### Best Practices
+
+There is no single right way to organize a project but there are important best practices to follow.
+
+* **Treat data as read only:** This is probably the most important goal of setting up a project. Data is typically time consuming and/or expensive to collect. Working with the data interactively (e.g., in Microsoft Excel) where they can be modified means you are never sure of where the data came from or how it has been modified since collection. **In science, we call this the problem of scientific provenance; keeping track of where our data came from and what we did to it in order to get some important result.**
+* **Data cleaning:** In many cases, your initial data will be "dirty." That is, it needs significant pre-processing in order to coerce it into a format that R will find useful. This task is sometimes called "data munging." I find it useful to store these scripts in a separate folder and to create a second read-only data folder to hold the "cleaned" data sets.
+* **Treat generated output as disposable:** You should be able to regenerate all of your results from your R scripts. There are many ways to do this. I find it useful to have output folders with dates for names in `YYYYMMDD` format so that I can connect outputs to new developments in my research.
+
+### Challenge: Saving the Data to a New Directory
+
+Using RStudio's project management pane at the lower-right, create a new folder called `data` inside your project folder.
+**Then, copy the `gapminder-FiveYearData.csv` file to the new `data` directory.**
+
+<!--TODO Advanced lesson: version control.
+
+"We also set up our project to integrate with Git, putting it under version control..."-->
+
+## Getting Help
+
+The R environment and every published package provide help files for functions.
+Recall that, in order to search for help on a specific function from a package that is currently loaded into the **namespace** (the interactive R session), we can use a question mark before its name.
+We can also call the `help()` function on the function's name.
+
+```r
+?floor
+help(floor)
+```
+
+**There's a lot that goes into function documentation but there are a few things in particular to pay attention to:**
+
+* **Description:** This describes the purpose of the thing you asked help about.
+* **Usage:** This provides examples of how the function is called.
+* **Arguments:** This is a list of optional and required arguments and the type of values they expect.
+
+```r
+?log
+```
+
+Here are some other sections we can see in the `log()` documentation:
+
+* **Value:** This describes what data the function returns.
+* **See also:** This is a list of related functions.
+* **Examples:** Shows examples for how the function might be used.
+
+**How can we get help on operators?**
+
+```r
+?"+"
+```
+
+### Seeking Help in the Community
+
+One of the things that surprises new software developers the most is how frequently more experienced software developers use search engines to figure out a problem they have.
+"Just Google it" may sound like a trivial response to a hard problem.
+However, most of the time, any problem you're having in R or with another software tool is a problem someone else has encountered before.
+This is why there are entire communities devoted to software questions online, [like Stack Overflow](http://stackoverflow.com/).
+
+We can restrict our questions on Stack Overflow to questions about R by adding the `[r]` keyword to our queries.
+If you can find the answer and need to post a new question, there are a couple of functions in R that can help you.
+
+```r
+?dput
+```
+
+`dput()` will dump the data you're working with into a format so that it can be copy-and-pasted by anyone else into their R session.
+
+```r
+sessionInfo()
+```
+
+`sessionInfo()` prints out a description of your platform, the operating system, your current version of R and the versions of the packages you have installed and loaded.
+This is important information to include in a post.
+
+### Challenge: Learning to Create Vectors
+
+**Look at the help for the `c` function. What kind of vector do you expect you will create if you evaluate the following?**
+
+```
+c(1, 2, 3)
+c('d', 'e', 'f')
+c(1, 2, 'f')
+```
+
+## Data Structures
+
+One of R's most powerful features is its ability to deal with tabular data--or data in a table form.
+This is also the most common format for data storage and presentation, spreadsheets being the most prominent example.
+Let's start by making a toy dataset in your `data/` directory.
+
+```
+coat,weight,likes_string
+calico,2.1,TRUE
+black,5.0,FALSE
+tabby,3.2,TRUE
+```
+
+*(Learners may need to put an empty line at the of the file for R to read it without error.)*
+
+Call the new text file `feline-data.csv`.
+**We can create this new text file directly in RStudio by going to File -> New File -> Text File.**
+
+We can read this CSV file into R using the `read.csv()` function.
+
+```{r}
+cats <- read.csv(file = "data/feline-data.csv")
+cats
+```
+
+Typing the name of the variable we stored the data in, we get a nicely spaced, tabular representation of our data.
+The `read.csv()` function is used for reading in tabular data stored in a text file where the columns of data are delimited by commas (where CSV stands for "comma-separated values").
+Tabs are also commonly used to separated columns; if your data are in this format you can use the function `read.delim()`.
+If the columns in your data are delimited by a character other than commas or tabs, you can use the more general and flexible `read.table()` function.
+
+We can access the values in a particular column of our dataset using the `$` operator.
+
+```r
+cats$weight
+cats$coat
+```
+
+**We can perform operations on such a list of values the same as if it was a single value.**
+For instance, what if we discovered that the scale used to weight these cats systematically underestimated their weight by 1 kilogram?
+
+```r
+cats$weight + 1
+```
+
+Try this example:
+
+```r
+paste("My cat is", cats$coat)
+```
+
+What about:
+
+```r
+cats$weight + cats$coat
+```
+
+**What went wrong?**
+
+### Data Types in R
+
+We can ask what type of data something is in R using the `typeof()` function.
+
+```r
+typeof(cats$weight)
+```
+
+**There are 5 main data types: `double`, `integer`, `complex`, `logical` and `character`.**
+`double` is for floating-point or decimal data whereas `integer` is for whole numbers only.
+Sometimes, you might see an `L` suffixed to an integer in R; this is to explicitly indicate that the number is an integer.
+
+```r
+typeof(1)
+typeof(1L)
+```
+
+No matter how complicated our analyses in R become, all of our data can be described by one of these 5 data types.
+This has important consequences.
+Let's make a new dataset based on our original.
+**You should still have `feline-data.csv` opened as a text file at the top-left of RStudio. If not, you can open it again from the file plane at the bottom-right.**
+Add this line to the bottom of the file and save it as a new file, `feline-data2.csv` in the `data/` directory.
+
+```
+tabby,2.3 or 2.4,TRUE
+```
+
+Now, we'll read in this new CSV file and give it a new variable name.
+
+```r
+cats2 <- read.csv(file = "data/feline-data2.csv")
+```
+
+Now what happens when we try to correct the weights in the `weight` column as we did before?
+
+```r
+cats2$weight + 1
+```
+
+When R reads a CSV into one of these tables, it insists that everything in a column be the same basic type; if it can’t understand everything in the column as a `double`, then nobody in the column gets to be a `double`.
+**The table that R loaded our cats data into is something called a `data.frame`, and it is our first example of something called a data structure--that is, a structure which R knows how to build out of the basic data types.**
+We can confirm that this is a `data.frame` by calling the `class()` function on it.
+
+```r
+class(cats)
+```
+
+## Conclusion and Summary
+
+### Other Resources
+
+* [Quick-R](http://www.statmethods.net/): "An easily accessible reference...for both current R users, and experienced users of other statistical packages...who would like to transition to R."
+* [RStudio Cheat Sheets](https://www.rstudio.com/resources/cheatsheets/): A list of informational graphics that help remind you how to use some advanced features in RStudio.
+* [R Cookbook](http://www.cookbook-r.com/): Code samples for a number of "common tasks and problems in analyzing data."
