@@ -363,7 +363,7 @@ We can install new packages using the `install.packages()` function.
 install.packages('reshape2')
 ```
 
----
+-------------------------------------------------------------------------------
 
 ## Checkpoint: Basic R
 
@@ -375,7 +375,7 @@ install.packages('reshape2')
 * Use of mathematical and comparison operators in R;
 * Calling functions in R.
 
----
+-------------------------------------------------------------------------------
 
 ## Project Management with RStudio
 
@@ -502,9 +502,9 @@ Let's start by making a toy dataset in your `data/` directory.
 
 ```
 coat,weight,likes_string
-calico,2.1,TRUE
-black,5.0,FALSE
-tabby,3.2,TRUE
+calico,2.1,1
+black,5.0,0
+tabby,3.2,1
 ```
 
 *(Learners may need to put an empty line at the of the file for R to read it without error.)*
@@ -576,7 +576,7 @@ Let's make a new dataset based on our original.
 Add this line to the bottom of the file and save it as a new file, `feline-data2.csv` in the `data/` directory.
 
 ```
-tabby,2.3 or 2.4,TRUE
+tabby,2.3 or 2.4,1
 ```
 
 Now, we'll read in this new CSV file and give it a new variable name.
@@ -598,6 +598,271 @@ We can confirm that this is a `data.frame` by calling the `class()` function on 
 ```r
 class(cats)
 ```
+
+### Vectors and Type Coercion
+
+**A data frame in R is a data structure that is composed of another data structure: the vector.**
+
+```r
+my.vector <- vector(length = 3)
+my.vector
+```
+
+A vector in R is essentially an ordered list of things, with the special condition that everything in the vector must be the same basic data type.
+If you don’t choose the data type, the default is the `logical` data type; or, you can declare an empty vector of whatever type you like.
+
+```r
+my.vector <- vector(mode='character', length=3)
+my.vector
+```
+
+A vector is like a row or column in a table.
+Data frames use vectors to represent the contents of a column.
+**We've seen vectors before, when we learned about the concatenate or `c()` function. This function allows us to create vectors with explicit contents.**
+
+```r
+x <- c(2, 3, 5, 8)
+x
+```
+
+The concatenate function can also append values to the end of an existing vector.
+
+```r
+y <- c(x, 15)
+y
+```
+
+We also use a shortcut to create a series of numbers.
+
+```r
+z <- 1:10
+z
+```
+
+The `seq` function, more generally, allows us to create an arbitrary sequence of integers or doubles as a vector.
+
+```r
+seq(10)
+seq(1, 10, by=0.2)
+```
+
+**What happens when we construct the following vector?**
+
+```r
+c(2, "3", 5)
+```
+
+**This is something called type coercion and it is the source of many surprises and the reason why we need to be aware of the basic data types and how R will interpret them.**
+When R encounters a mix of types (here `numeric` and `character`) to be combined into a single vector, it will force them all to be the same type.
+What type they are forced to be depends on what is easiest or safest.
+In the previous example, it is easier to consider all of the contents as `character` strings because, after all, we typed in the characters from a keyboard.
+The bottom-line is: **If your data don't look like what you thought it was going to look like, type coercion may well be to blame.**
+
+Type coercion can also be useful.
+For example, in the `cats` dataset, we have a column `like_string` that represents whether or not that cat like string.
+Thus, it should have a `logical` value but, as we recall, we used 1s and 0s to represent the data in our CSV file.
+
+```r
+cats$likes_string
+```
+
+We should convert this `integer` data type to a `logical` data type in R.
+We can coerce the data type of this column to `logical` using the `as.logical()` function and assigning its result to that column.
+
+```r
+cats$likes_string <- as.logical(cats$likes_string)
+cats$likes_string
+```
+
+### Working with Vectors
+
+There are some helper functions that we can use with vectors, particularly as they get very large.
+
+```r
+x <- seq(1, 10, by=0.1)
+head(x, n=3)
+```
+
+The `head()` function shows us the first `n` entries of a vector.
+**Here, I specified that I wanted to see the first 3 entries. Can anyone tell me how many entries `head()` shows by default?**
+
+```r
+tail(x)
+length(x)
+```
+
+**We can also assign names to the entries in our vector.**
+
+```r
+example <- 5:8
+names(example) <- c("a", "b", "c", "d")
+example
+```
+
+### Challenge: Naming the Alphabet
+
+Start by making a vector with the numbers 1 through 26.
+Multiply the vector by 2, and give the resulting vector names A through Z (hint: there is a built in vector called `LETTERS`).
+
+### Factors
+
+Recall that the columns of a data frame are vectors.
+We can confirm this using the `str()` function, which gives us information on the structure of a vector.
+
+```r
+str(cats$weight)
+str(cats$likes_string)
+```
+
+What about this example?
+
+```r
+str(cats$coat)
+```
+
+This is an example of what in R are called factors.
+**Factors look like `character` data but are typically used to represent discrete categories of data.**
+For example, let's make a vector of cat colorations.
+
+```r
+colors <- c('tabby', 'black', 'tabby', 'sable', 'calico', 'sable')
+colors
+str(colors)
+```
+
+Currently, our vector is a character vector.
+We can convert our vector to a factor using the `factor()` function.
+
+```r
+categories <- factor(colors)
+categories
+str(categories)
+```
+
+**Is there a factor already in our `cats` data? Which column is it?**
+
+### Challenge: Keeping Strings as Strings
+
+In the `read.csv()` function, how can we prevent R from coercing our character strings to factors?
+Re-load the `cats` data with `read.csv()` so that the `coats` column is a character string, not a factor.
+
+### Factors and Reference Levels
+
+By default, R orders the levels of factor column alphabetically.
+Instead, we can manually specify the levels when we create a factor column.
+
+```r
+my.data <- c("case", "control", "control", "case")
+example <- factor(my.data, levels = c("control", "case"))
+str(example)
+```
+
+Here, we've explicitly told R that `control` should be ordered before `case`.
+This is a crucial choice in the specification and interpretation of linear models, for example, where we need the reference level of a categorical variable to be a certain level, not necessarily the first one in alphabetical order.
+
+### Lists
+
+Another data structure commonly used in R is the `list`.
+Unlike vectors, you can put different data types together in a list.
+
+```r
+list(1, 'a', TRUE, 1+4i)
+```
+
+We can also created **named lists** by assigning names to each entry.
+
+```r
+list(title = "Research Bazaar", numbers = 1:10, data = TRUE)
+```
+
+We can now understand the somewhat surprising result of asking for the "type" of a data frame.
+
+```r
+typeof(cats)
+```
+
+**We see that `data.frames` look like lists "under the hood." This is because a `data.frame` is really a `list` of vectors and factors.**
+A `data.frame` is a special case of a `list` where the vectors must have the same length.
+
+### Indexing Data Frames
+
+We saw how we can access the column of a data frame using the `$` symbol.
+
+```r
+cats$weight
+```
+
+We can also access a column by its index--the ordinal that specifies its position from left to right.
+
+```r
+cats
+cats[,1]
+```
+
+Data frames have two parts: rows and columns.
+Here, the comma indicates we are indexing the *second part* of the data frame (columns), not the first part (rows).
+We can access the first row as follows.
+
+```r
+cats[1,]
+```
+
+**How can we access the `weight` column of our `cats` data frame?**
+
+```r
+cats[,2]
+```
+
+**How can we access the value in the first row and the first column of our data frame?**
+
+```r
+cats[1,1]
+```
+
+### Matrices
+
+The last data structure we'll talk about today is the matrix.
+
+```r
+mat <- matrix(0, ncol=4, nrow=3)
+mat
+class(mat)
+typeof(mat) # A matrix can hold only one type of data
+dim(mat)
+nrow(mat)
+ncol(mat)
+```
+
+**Predict the result of calling `length()` on our matrix.**
+
+We can see how the indexing notation from data frames works with matrices, too.
+
+```r
+mat <- matrix(LETTERS, ncol=13, nrow=2)
+mat
+mat[2,4]
+```
+
+<!--TODO: Compare to subsetting tutorial:
+    http://tracykteal.github.io/r-novice-gapminder/06-data-subsetting.html -->
+
+### Challenge: Matrices
+
+Make another `matrix`, this time containing the numbers `1:50`, with 5 columns and 10 rows.
+Did the `matrix()` function fill your matrix by column, or by row, as its default behaviour?
+See if you can figure out how to change this (hint: read the documentation for `matrix()`).
+
+-------------------------------------------------------------------------------
+
+## Checkpoint: Data Structures in R
+
+**Now you should be familiar with the following:**
+
+* The different types of data in R.
+* The different **data structures** that we can use to organize our data in R.
+* How to ask basic questions about the structure and size of our data in R.
+
+-------------------------------------------------------------------------------
 
 ## Conclusion and Summary
 
