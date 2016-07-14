@@ -212,7 +212,7 @@ For instance, let's say we only want data for the country of Iceland.
 SELECT * FROM surveys WHERE country="Iceland";
 ```
 
-**The `WHERE` keyword in this query specifies a condition which each record must match in order for it to be included in the results.**
+**The `WHERE` clause in this query specifies a condition which each record must match in order for it to be included in the results.**
 Since the `year` column is just an integer, if we want to get only the data since the year 2000, we can write a condition that tests for `year` greater-than-or-equal-to 2000.
 
 ```sql
@@ -242,3 +242,72 @@ Write a query that returns the country, year, life expectancy and population in 
 * How many records are there? **(216)**
 * How many records are there if you just look at the year 1952? **(5)**
 * How many records are there if you just look at the year 2007? **(83)**
+
+## Building Complex Queries
+
+**We can export the results of our query** by clicking **Actions** -> **Save Result (CSV) to File.**
+
+**To save our query,** rather than copying and pasting the text into a text editor, we can create what in database parlance is called a **View.**
+Views are just that, a view of the database's contents, which is what our query describes, after all.
+To create a View, at the top menu, click **View** then **Create View.**
+
+Now, let's combine what we've seen so far to get data for three countries from the year 2000 on.
+This time, we'll introduce the `IN` keyword to make the query more readable.
+
+```sql
+SELECT *
+  FROM surveys
+ WHERE (year >= 2000)
+   AND (country IN ("Iceland", "Madagascar", "Dominican Republic"));
+```
+
+**We built this query by starting with more simple queries, testing each one as we went along. This is a practice to get familiar with.**
+It's exactly how expert software engineers produce complex programs, too.
+Sometimes it might help to take a subset of the data that you can easily see in a temporary database to practice your queries on before working on a larger or more complicated database.
+
+### Sorting
+
+It's important to understand that **the records in a database table aren't actually stored in any particular order.**
+When we execute a query, we get the results in what is essentially random order from our perspective.
+We can sort the results of our queries using the `ORDER BY` clause.
+In this example, notice that I'm selecting records from the `countries` table instead of the the `surveys` table.
+
+```sql
+SELECT * FROM countries ORDER BY country ASC;
+```
+
+The keyword `ASC` indicates we want the rows in ascending order.
+This is the default, so we could have omitted this keyword.
+To get the rows in descending order, we use the keyword `DESC`.
+
+```sql
+SELECT * FROM countries ORDER BY country DESC;
+```
+
+We can also sort on several fields at once.
+Multiple sorting is typically only effective if there are multiple categorical fields--fields that have multiple rows with the same values.
+For instance, to order the names of countries within continents...
+
+```sql
+SELECT * FROM countries ORDER BY continent ASC, country ASC;
+```
+
+Note that we don't actually have to display a column to sort by it.
+For instance, let’s say we want to look at countries with population higher than a million and order the countries by their population, but we only want to see `gdpPercap`.
+
+```sql
+SELECT country, gdpPercap FROM surveys WHERE (pop > 1000000) ORDER BY pop ASC;
+```
+
+**To understand why this works, we need to understand more about how SQL queries are processed by the database management system.**
+When SQLite3, or another other database management system, recieves the above SQL query...
+
+1. It first filters the rows according to the `WHERE` clause. It applies this condition to each row, one-by-one, keeping the rows that fit the conditional statement.
+2. Second, it sorts the results according to the `ORDER BY` clause.
+3. Finally, it displays the requested columns and any calculations you've requested on them.
+
+**When we're writing a query, the order of the clauses must be:** `SELECT`, `FROM`, `WHERE`, and then `ORDER BY`.
+
+### Challenge
+
+Using the `surveys` table, write a query to display `country`, `year`, `lifeExp` (life expectancy), and population in millions (rounded to two decimal places) for the year 2007, ordered by life expectancy with highest life expectancy at the top.
