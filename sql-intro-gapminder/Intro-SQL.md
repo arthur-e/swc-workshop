@@ -232,6 +232,12 @@ For instance, if we wanted to get data for three countries instead of just for I
 SELECT * FROM surveys WHERE (country = "Iceland") OR (country = "Madagascar") OR (country = "Dominican Republic");
 ```
 
+We can invert queries with the `NOT` keyword.
+
+```sql
+SELECT * FROM surveys WHERE NOT country = "Iceland";
+```
+
 ### Challenge: Effective Filtering
 
 Write a query that returns the country, year, life expectancy and population in thousands of people for any record with a life expectancy greater than 70.
@@ -300,7 +306,7 @@ SELECT country, gdpPercap FROM surveys WHERE (pop > 1000000) ORDER BY pop ASC;
 ```
 
 **To understand why this works, we need to understand more about how SQL queries are processed by the database management system.**
-When SQLite3, or another other database management system, recieves the above SQL query...
+When SQLite3, or another other database management system, receives the above SQL query...
 
 1. It first filters the rows according to the `WHERE` clause. It applies this condition to each row, one-by-one, keeping the rows that fit the conditional statement.
 2. Second, it sorts the results according to the `ORDER BY` clause.
@@ -311,3 +317,128 @@ When SQLite3, or another other database management system, recieves the above SQ
 ### Challenge
 
 Using the `surveys` table, write a query to display `country`, `year`, `lifeExp` (life expectancy), and population in millions (rounded to two decimal places) for the year 2007, ordered by life expectancy with highest life expectancy at the top.
+
+## Aggregation and Joins
+
+The features we've seen so far are not too dissimilar from what we could do with a spreadsheet program.
+**One of the more powerful features of SQL that distinguishes it from a spreadsheet is aggregation.**
+This allows us to combine results by grouping records based on their values and calculating totals or averages.
+
+Let's go to the `surveys` table and find out how many entries there are.
+
+```sql
+SELECT count(*)
+  FROM surveys;
+```
+
+The `count()` function counts the number of rows that appear in the result.
+Here, we don't need to supply any particular column name if we just want to count the number of rows that appear; thus, the wildcard is the shortest way to write this query.
+
+We can find out the overall population; here, the number of people who have been on Earth since 1952.
+
+```sql
+SELECT count(*), sum(pop)
+  FROM surveys;
+```
+
+Let's output this value in millions of people, rounded to three decimal places.
+
+```sql
+SELECT round(sum(pop)/1000000.0, 3)
+  FROM surveys;
+```
+
+There are many other aggregation functions available in SQL.
+
+* `avg()``
+* `first()`
+* `last()`
+* `max()`
+* `min()`
+* `sum()`
+
+Let's use one query to output the total population, average population, and then the minimum and maximum population.
+
+```sql
+SELECT pop, avg(pop), min(pop), max(pop)
+  FROM surveys;
+```
+
+**This isn't very meaningful, however, aggregating across countries.**
+We can use a `GROUP BY` clause to aggregate within groups.
+
+```sql
+SELECT country, avg(pop), min(pop), max(pop)
+  FROM surveys
+ GROUP BY country;
+```
+
+**Note that if we add any other fields to our `SELECT` clause, we have to use aggregation functions on them but any fields in our `GROUP BY` clause do not need such functions.**
+
+We can also order the aggregates rows in the output.
+
+```sql
+SELECT continent, count(*)
+  FROM countries
+ GROUP BY continent
+ ORDER BY count(continent);
+```
+
+Note that this is the same as:
+
+```sql
+SELECT continent, count(*) AS total
+  FROM countries
+ GROUP BY continent
+ ORDER BY total;
+```
+
+#### Challenge: Aggregation
+
+Let's go back to the `surveys` table.
+Write queries that return:
+
+* How many countries were counted in each year?
+* Average `gdpPercap` of each country?
+
+### Joins
+
+To combine data from two tables we can use a `JOIN` clause, which comes after the `FROM` clause.
+We also need to tell the computer which columns provide the link between the two tables using the word `ON`.
+**The intent here is to combine the data in the in `countries` table with the data in the `surveys` table.**
+What we want is to join the data with the same country name.
+
+```sql
+SELECT *
+  FROM surveys
+  JOIN countries
+    ON surveys.country = countries.country;
+```
+
+`ON` is like `WHERE`; it filters things out according to a test condition.
+We use the `table.colname` format to distinguish the columns in each table.
+
+```sql
+SELECT countries.continent, surveys.country, surveys.lifeExp
+ FROM surveys
+ JOIN countries
+   ON surveys.country = countries.country;
+```
+
+#### Challenge: Joins and Aggregation
+
+Write a query that returns the continent, the average life expectancy and the maximum population for each continent.
+**Bonus:** Do this just for the year 1952 then for the year 2007.
+
+### Aliases
+
+**As queries get more complex, table and column names can get long and unwieldy. Just as we saw with column names, we can use aliases to assign new names to tables.**
+
+We can alias table names, as in this example.
+
+```sql
+SELECT s.year, s.country
+  FROM surveys AS s
+  JOIN countries AS co
+    ON s.country = co.country;
+```
