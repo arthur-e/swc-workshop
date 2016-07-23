@@ -160,7 +160,7 @@ We can select these records from the `Visited` table by using a `WHERE` clause i
     sqlite> SELECT * FROM Visited WHERE site='DR-1';
 
 **The database manager executes this query in two stages.**
-First, it checkes the entires of the `Visited` table to see which ones match the `WHERE` clause.
+First, it checks the entires of the `Visited` table to see which ones match the `WHERE` clause.
 Then, it returns the columns from those entries specified in the `SELECT` clause.
 **This processing order means that we can even filter records on columns that don't appear in the results.**
 
@@ -308,7 +308,7 @@ We know that this doesn't work because the database manager is aggregating acros
       FROM Survey
      WHERE quant='rad';
 
-We could execute this query with anoter conditional clause five times, one for each scientist, **but that would be tedious and tedium is what we're trying to avoid by using a database!**
+We could execute this query with another conditional clause five times, one for each scientist, **but that would be tedious and tedium is what we're trying to avoid by using a database!**
 
 SQL has a `GROUP BY` clause for this very purpose.
 

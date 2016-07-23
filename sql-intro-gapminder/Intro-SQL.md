@@ -173,6 +173,8 @@ SELECT DISTINCT country, year FROM surveys
 
 SQLite returns every unique pair of values between the two columns.
 
+**What else is this good for? Identifying (and ultimately removing) duplicates!**
+
 In addition to querying values stored in the database, we can use SQL to calculate new or derived values.
 
 ```sql
@@ -219,6 +221,11 @@ Since the `year` column is just an integer, if we want to get only the data sinc
 SELECT * FROM surveys WHERE year >= 2000;
 ```
 
+**How does this work? The database manager executes this query in two stages.**
+First, it checks the entries of the `surveys` table to see which ones match the `WHERE` clause.
+Then, it returns only the columns from those entries specified in the `SELECT` clause.
+**This processing order means that we can even filter records on columns that don't appear in the results.**
+
 How could we combine the last two queries?
 
 ```sql
@@ -238,6 +245,25 @@ We can invert queries with the `NOT` keyword.
 SELECT * FROM surveys WHERE NOT country = "Iceland";
 ```
 
+**We can also filter by partial matches.**
+If we want to see all of the countries whose names begin with the word "United" we could use the `LIKE` keyword.
+
+```sql
+SELECT * FROM surveys WHERE country LIKE "United%";
+```
+
+Here, the percent sign (`%`) is a wildcard symbol.
+It specifies that any number of characters, or no characters, can take its place.
+Here, its use at the end of the word "United" indicates that matching country names must begin with "United" but can otherwise have anything coming after it.
+
+If we want to see all of the countries that have "Guinea" in their name we could write a query as follows.
+
+```sql
+SELECT * FROM surveys WHERE country LIKE "%Guinea%";
+```
+
+**Note that the country of Guinea is also returned; the wildcards can match nothing.**
+
 ### Challenge: Effective Filtering
 
 Write a query that returns the country, year, life expectancy and population in thousands of people for any record with a life expectancy greater than 70.
@@ -250,12 +276,6 @@ Write a query that returns the country, year, life expectancy and population in 
 * How many records are there if you just look at the year 2007? **(83)**
 
 ## Building Complex Queries
-
-**We can export the results of our query** by clicking **Actions** -> **Save Result (CSV) to File.**
-
-**To save our query,** rather than copying and pasting the text into a text editor, we can create what in database parlance is called a **View.**
-Views are just that, a view of the database's contents, which is what our query describes, after all.
-To create a View, at the top menu, click **View** then **Create View.**
 
 Now, let's combine what we've seen so far to get data for three countries from the year 2000 on.
 This time, we'll introduce the `IN` keyword to make the query more readable.
@@ -375,7 +395,7 @@ SELECT country, avg(pop), min(pop), max(pop)
 
 **Note that if we add any other fields to our `SELECT` clause, we have to use aggregation functions on them but any fields in our `GROUP BY` clause do not need such functions.**
 
-We can also order the aggregates rows in the output.
+We can also order the aggregated rows in the output.
 
 ```sql
 SELECT continent, count(*)
@@ -442,3 +462,67 @@ SELECT s.year, s.country
   JOIN countries AS co
     ON s.country = co.country;
 ```
+
+### Filtering on Aggregates
+
+We've now seen how a `WHERE` clause can be used to filter the results according to some criteria.
+We can also filter aggregated results with a `HAVING` clause.
+For instance, we can find those countries with the highest life expectancy at any time with the following country.
+
+```sql
+SELECT country, max(lifeExp) AS max_life_exp
+  FROM surveys
+ GROUP BY country
+HAVING max_life_exp > 80;
+```
+
+**Note that while the `WHERE` clause comes before the `GROUP BY` clause, the `HAVING` clause comes after. One way to think about this is: the data are retrieved (`SELECT`), can be filtered (`WHERE`), then summarized in groups (`GROUP BY`); finally, we only select some of these groups (`HAVING`).**
+
+### Saving Queries
+
+It is not uncommon to repeat the same operation more than once, for example for monitoring or reporting purposes.
+SQL comes with a very powerful mechanism to do this: views.
+**Views are a form of query that is saved in the database, and can be used to look at, filter, and even update information.**
+One way to think of views is as a table, that can read, aggregate, and filter information from several places before showing it to you.
+
+To create a View in SQLite Manager: at the top menu, click **View** then **Create View.**
+**A better way to create a View is using SQL.**
+
+```sql
+CREATE VIEW maximum_life_expectancies AS
+SELECT country, max(lifeExp) AS max_life_exp
+  FROM surveys
+ GROUP BY country
+ ORDER BY max_life_exp;
+```
+
+Having done this, we can now access the results of this query with a much shorter query:
+
+```sql
+SELECT *
+  FROM maximum_life_expectancies;
+```
+
+In SQLite Manager, we can remind ourselves of how we wrote this query by looking at the tree view on the left, expanding the **Views** tree, right-clicking on the view **maximum_life_expectancies**, and clicking **"Modify View"** in the menu.
+
+To get rid of a view:
+
+```sql
+DROP VIEW maximum_life_expectancies;
+```
+
+**We can export the results of our query** by clicking **Actions** -> **Save Result (CSV) to File.**
+
+## Connecting to SQL in R
+
+<!--TODO-->
+
+## Advanced Topics
+
+### Unions of Results
+
+<!--TODO the Union keyword-->
+
+### Differencing Results
+
+<!--TODO Set theory examples-->
