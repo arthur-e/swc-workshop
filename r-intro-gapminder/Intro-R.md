@@ -4,14 +4,14 @@ Adapted from [Tracy K. Teal's lesson](http://tracykteal.github.io/r-novice-gapmi
 
 ## Overview
 
-The goal of this lesson is to introduce non-programmers or begining programmers to the R programming language.
+The goal of this lesson is to introduce non-programmers or beginning programmers to the R programming language.
 R is commonly used in many scientific disciplines for statistical analysis.
 This workshop will focus on R as a general purpose programming language and data analysis tool, not on any specific statistical analysis.
 
 ### The Data
 
 In this workshop, we will be using a subset of [the Gapminder dataset](http://www.gapminder.org/).
-This is world wide statistical data collected and curated to allow for a "fact based worldview."
+This is world-wide statistical data collected and curated to allow for a "fact based worldview."
 These data includes things like employment rates, birth rates, death rates, percent of GDP that's from agriculture and more.
 There are currently 519 variables overall, each as a time series.
 

@@ -73,7 +73,7 @@ That client is called SQLite Manager and it is available as a plug-in for Mozill
 
 1. At the top menu, select **Database** -> **New Database.**
 2. We'll call our new database **gapminder.**
-3. SQLite3 manages databases that are stored as single files on a computer's file system. So, after we click **OK** we'll be prompted to save the database as a file. **Save it to your Desktop.**
+3. SQLite3 manages databases that are stored as single files on a computer's file system. So, after we click **OK** we'll be prompted to save the database as a file. **Save it to your Desktop as `gapminder.sqlite`.**
 4. Start the import **Database** -> **Import.**
 5. Select the file to import: `gap-every-five-years.csv`
 6. Give the table a name that matches the table's contents. I like to choose a plural noun that describes the data represented by the rows. We'll call it **surveys.**
@@ -515,7 +515,71 @@ DROP VIEW maximum_life_expectancies;
 
 ## Connecting to SQL in R
 
-<!--TODO-->
+```r
+install.packages('RSQLite')
+```
+
+**Because the database manager provides all sorts of services for managing and protecting the integrity of our data, we don't open the database like a regular file. Instead, we open a connection to the database and use this connection to issue commands to the database manager.**
+
+```r
+library(RSQLite)
+conn <- dbConnect(SQLite(), dbname='/Users/arthur/Desktop/gapminder.sqlite')
+```
+
+I've specified the file path to the SQLite database on my machine.
+It may be different on your machine.
+On Windows machines, the path to your Desktop may be:
+
+```
+C:\Users\<username>\Desktop
+```
+
+**Now, `conn` is a variable in R that represents our connection to the database.**
+First, let's take a look at what tables are available in this database.
+
+```r
+tables <- dbListTables(conn)
+tables
+```
+
+Note that the result is an R character vector.
+
+```r
+class(tables)
+```
+
+Now, we can issue SQL commands to the database from the R environment.
+The advantage of doing this in R is that, just like in the last example, the results of our queries will be in the form of R data types.
+We can then take everything we've learned about data analysis in R and apply it to the data stored in our database.
+
+```r
+countries <- dbGetQuery(conn, 'SELECT * FROM countries')
+head(countries)
+```
+
+**Note that the result of our query is, specifically, a `data.frame`.**
+
+```r
+class(countries)
+```
+
+Let's make another query.
+When we have a data frame in R we can get quick summary statistics with the `summary()` function.
+
+```r
+surveys <- dbGetQuery(conn, 'SELECT * FROM surveys')
+summary(surveys)
+```
+
+It's important to realize that the data frame representation of our SQL table is just a copy of the data from the database.
+We can safely make any changes we want to the data frame without affecting our data in the database.
+Moreover, once we have pulled our data from the database and have no need for running further queries, we should close our connection to the database.
+We should do this before running any analysis on our data.
+
+```r
+dbDisconnect(conn)
+rm(conn)
+```
 
 ## Advanced Topics
 
@@ -526,3 +590,9 @@ DROP VIEW maximum_life_expectancies;
 ### Differencing Results
 
 <!--TODO Set theory examples-->
+
+## Conclusion and Summary
+
+### Other Resources
+
+* SQL: Visual Quickstart Guide (by Chris Fehily, 3rd Edition)
