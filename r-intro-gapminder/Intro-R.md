@@ -439,9 +439,10 @@ install.packages('reshape2')
 ## Project Management with RStudio
 
 The scientific process is naturally incremental and many projects start life as random notes, some code, then a manuscript, and, eventually, everything is a bit mixed together.
-**What's wrong with organizing a project like this?**
 
-[Link to "bad layout" figure](http://swcarpentry.github.io/r-novice-gapminder/fig/bad_layout.png)
+[Link to "bad layout" figure.](http://swcarpentry.github.io/r-novice-gapminder/fig/bad_layout.png)
+
+**What's wrong with organizing a project like this?**
 
 * It is really hard to tell which version of your data is the original and which is modified.
 * We may have multiple versions of our results and, here, the results are mixed together making it difficult to tell them apart at a glance.
@@ -453,6 +454,23 @@ The scientific process is naturally incremental and many projects start life as 
 * It makes it simpler to share your code with someone else.
 * It allows you to easily upload your code when submitting a manuscript for publication.
 * It makes it easier to pick the project back up after a break.
+
+Here's an example layout suggested by Daniel Chen.
+
+```
+project_root/
+  doc/     # directory for documentation, one subdirectory for manuscript
+  data/    # data for storing fixed data sets
+  src/     # any source code
+  bin/     # any compiled binaries or scripts
+  results/ # output for tracking computational experiments performed on data
+    20160701/
+    20160705/
+    ...
+```
+
+With version control on either the project root or the `src` directories.
+The `data`, `results`, and possibly the `bin` directories should be excluded from version control.
 
 ### How RStudio Helps
 

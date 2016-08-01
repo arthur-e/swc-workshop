@@ -618,11 +618,32 @@ SELECT c.continent, avg(s.lifeExp)
 
 ### Unions of Results
 
-<!--TODO the Union keyword-->
+What if we need to combine the results of two queries?
+For instance, what if we knew there was a systematic error in the population estimates prior to 1967?
 
-### Differencing Results
+```sql
+SELECT country, year, pop + 1000
+  FROM surveys
+ WHERE year < 1967
+```
 
-<!--TODO Set theory examples-->
+How do we combine the records from these years with the records from later years?
+We only want to apply the population adjustment to the records from before 1967.
+
+```sql
+SELECT country, year, pop + 1000 AS pop
+  FROM surveys
+ WHERE year < 1967
+UNION
+SELECT country, year, pop
+  FROM surveys
+ WHERE year >= 1967
+```
+
+Some things to note:
+
+* We can use `UNION` multiple times to combine, row-wise, as many queries as we want.
+* Every query we combine in this way must have the same columns in the output.
 
 ## Conclusion and Summary
 
