@@ -650,3 +650,7 @@ Some things to note:
 ### Other Resources
 
 * SQL: Visual Quickstart Guide (by Chris Fehily, 3rd Edition)
+* [The R Inferno](http://www.burns-stat.com/pages/Tutor/R_inferno.pdf): A humorous and informative guide to some of the more advanced features and confounding behavior.
+* [Rtips](http://pj.freefaculty.org/R/Rtips.html)
+* [R Reference Card](https://cran.r-project.org/doc/contrib/Short-refcard.pdf)
+* [Writing (Fast) Loops in R](http://faculty.washington.edu/kenrice/sisg/SISG-08-05.pdf)
