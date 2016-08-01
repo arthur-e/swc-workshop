@@ -2,22 +2,23 @@
 
 ## Goal and Objectives
 
-<!--TODO
+We'll again use the Gapminder dataset we saw in the R introduction lesson.
+Now that we're more familiar with this dataset, we might ask some specific questions about the data.
 
-In order to answer the questions described above, we’ll need to do the following basic data operations:
+* What is the average life expectancy since 2000 of each of the top 10 countries ordered by per capita GDP?
+* What is the average life expectancy since 2000 across each continent?
 
-    select subsets of the data (rows and columns)
-    group subsets of data
-    do math and other calculations
-    combine data across spreadsheets
+**In order to answer the questions described above, we'll need to do the following basic data operations:**
 
-In addition, we don’t want to do this manually! Instead of searching for the right pieces of data ourselves, or clicking between spreadsheets, or manually sorting columns, we want to make the computer do the work.
+* Select subsets of the data (rows and columns)
+* Group subsets of data
+* Do math and other calculations
+* Combine data across spreadsheets
 
-In particular, we want to use a tool where it’s easy to repeat our analysis in case our data changes. We also want to do all this searching without actually modifying our source data.
-
+In addition, we don't want to do this manually!
+Instead of searching for the right pieces of data ourselves, or clicking between spreadsheets, or manually sorting columns, we want to make the computer do the work.
+In particular, we want to use a tool where it's easy to repeat our analysis in case our data changes. We also want to do all this searching without actually modifying our source data.
 Putting our data into a database and using SQL will help us achieve these goals.
-
--->
 
 ## Background
 
@@ -30,8 +31,6 @@ There are three common options for storing data:
 Text files are the easiest to create and work well with version control.
 Spreadsheets and spreadsheet programs like Microsoft Excel are good for doing analysis but they don't handle large or complex datasets well.
 **Databases, however, include powerful tools for search and analysis and are capable of handling large, complex datasets.**
-
-<!--TODO Short description of today's data-->
 
 **As with the previous lessons, I'm going to provide some brief background material and then we'll dive right into hands-on exercises.**
 
@@ -582,6 +581,40 @@ rm(conn)
 ```
 
 ## Advanced Topics
+
+Recall the questions we asked at the beginning.
+
+* What is the average life expectancy since 2000 of each of the top 10 countries ordered by per capita GDP?
+* What is the average life expectancy since 2000 across each continent?
+
+### Challenge: Life Expectancy, Top 10 Countries by GDP
+
+**What is the average life expectancy since 2000 of each of the top 10 countries ordered by average per capita GDP?**
+
+```sql
+SELECT country, avg(lifeExp), avg(gdpPercap) AS avg_percap_gdp
+  FROM surveys
+ WHERE year >= 2000
+ GROUP BY country
+ ORDER BY avg_percap_gdp DESC
+ LIMIT 10;
+```
+
+Here, I've introducted the `LIMIT` clause, which isn't required to answer this question but can make the results easier to read.
+What happens if we `ORDER BY gdpPercap` instead of the above?
+Why is this distinction important?
+
+### Challenge: Average Life Expectancy across Continents
+
+**What is the average life expectancy since 2000 across each continent?**
+
+```sql
+SELECT c.continent, avg(s.lifeExp)
+  FROM surveys AS s
+  JOIN countries AS c ON s.country = c.country
+ WHERE s.year >= 2000
+ GROUP BY continent
+```
 
 ### Unions of Results
 
