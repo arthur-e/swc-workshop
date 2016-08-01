@@ -60,6 +60,7 @@ Some things to note about the R console:
 
 * The version of R that we have installed is indicated by the version number printed on the first line. The R Foundation also gives cute names to these versions that may or may not be easier to remember.
 * The R console prompts us to type in commands with a right angle-bracket. This angle bracket is called **the prompt** and it simply tells us that R is ready to receive our commands. When R is executing a command that takes a little bit of time, we might not see the prompt, like this in example, where I tell R to sleep for 5 seconds:
+
 ```r
 Sys.sleep(5)
 ```
@@ -322,6 +323,64 @@ rm(list <- ls())
 
 We should pay attention when we see an error message in R.
 Usually, it contains information on how to fix a problem.
+
+## Creating Functions in R
+
+At some point, we're going to write R code for a particular task that we'll want to repeat over and over again the same way.
+This is what functions are good for; they take inputs, apply a consistent operation, and return the results.
+Up to now, we've used built-in functions in R.
+Now we'll see how to write our own functions.
+
+Let's imagine we want to calculate simple annual interest and find out the amount of interest owed after one month.
+This is a common situation with consumer credit card debt.
+
+```r
+simple_interest <- function (rate, balance) {
+  num_periods <- 1
+  freq <- 12
+  (rate * balance * num_periods) / freq
+}
+```
+
+**There are a few things to note about this function.**
+
+* In the function definition, we define two inputs: the interest `rate` and the original `balance`.
+* We assigned the function to a variable; this is the name of the function we will use to call it.
+* We've decided that the function should assume an annual interest rate and calculate the interest after 1 month, so we've set the `freq` argument to 12 and the number of periods, `num_periods`, to 1.
+
+**What is the result of this function when it is called? In R, the value of the last line in the function's body is what is returned.**
+
+Now, we can calculate the interest due after one month for an annual interest rate of 12% on an outstanding balance of $2500.
+
+```r
+simple_interest(0.12, 2500)
+```
+
+Let's make two changes to our function.
+We had restricted our function to annual interest rates and the interest after one month only.
+This might be the most common use of the function; it's so-called **default behavior.**
+However, **we can rewrite this function so that it is even more useful.**
+
+```r
+simple_interest <- function (rate, balance, num_periods=1, freq=12) {
+  interest <- (rate * balance * num_periods) / freq
+  return(interest)
+}
+```
+
+**Here, we've also use the `return()` function, which is a special function used only inside the bodies of other functions. `return()` explicitly specifies what the returned value of the function is.**
+For simple functions like this one, it's not really needed; our calculation fits on one line.
+In more complicated functions, however, it is good practice to use `return()` so that the result of the function is clear.
+
+Now that we've changed the function, we can use it to calculate the interest owed on the same balance after 3 months.
+We can also write the same function call in a more explicit way with keyword arguments.
+
+```r
+simple_interest(0.12, 2500, 3)
+simple_interest(rate=0.12, balance=2500, num_periods=3)
+```
+
+**What are the advantages to creating a function for this calculation?**
 
 ## Loading Packages in R
 
