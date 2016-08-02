@@ -20,3 +20,14 @@
 
 Everyone in this room belongs here.
 You have exactly the right background, training, and amount of experience that you need to participate in this workshop.
+
+## Logistics
+
+### Etherpad
+
+One way we use the Etherpad is to "crowd-source" notes about the workshop.
+Are you a more advanced learner in a particular lesson?
+Do you have a pro tip?
+Please share your knowledge with us!
+You should also feel free to ask and answer questions on the Etherpad's chat function.
+We'll try to get to any unanswered questions during the break; of course, you should also feel free to interrupt us with a question at any time.
