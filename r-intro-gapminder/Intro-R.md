@@ -217,6 +217,10 @@ Numbers that seem to be equal may actually have different underlying representat
 
 **In general, don't use `==` to compare numbers unless they are integers. Instead, use the all `all.equal` function.**
 
+```r
+all.equal(0.1, 0.3 / 3)
+```
+
 ### Variables and Assignment
 
 When we want R to remember a value or store the result of a calculation, we can give that value or result a name.
