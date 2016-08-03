@@ -204,6 +204,19 @@ Same for less-than-or-equal, greater-than, and greater-than-or-equal.
 1 >= -3
 ```
 
+#### Machine Precision
+
+When performing numerical calculations in a programming environment like R, particularly when working with important quantities like money, it's important to be aware of how the computer represents decimal numbers.
+For various reasons we won't go into, computers typically only approximate decimal numbers when they're stored.
+If we don't guard against this, we may see some surprising results.
+Numbers that seem to be equal may actually have different underlying representations and therefore be different by a small margin of error (called machine numeric tolerance).
+
+```r
+0.1 == 0.3 / 3
+```
+
+**In general, don't use `==` to compare numbers unless they are integers. Instead, use the all `all.equal` function.**
+
 ### Variables and Assignment
 
 When we want R to remember a value or store the result of a calculation, we can give that value or result a name.
