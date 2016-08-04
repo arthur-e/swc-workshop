@@ -570,6 +570,17 @@ surveys <- dbGetQuery(conn, 'SELECT * FROM surveys')
 summary(surveys)
 ```
 
+### Challenge: Reproducing our Aggregation in R
+
+Let's see if we can do that same aggregation we were trying before with this dataset.
+
+```r
+output <- dbGetQuery(conn, 'SELECT country, avg(gdpPercap) AS mean_gdp_per_capita, max(lifeExp) - min(lifeExp) AS life_exp_change FROM surveys GROUP BY country;')
+head(output)
+```
+
+### Disconnecting from the Database
+
 It's important to realize that the data frame representation of our SQL table is just a copy of the data from the database.
 We can safely make any changes we want to the data frame without affecting our data in the database.
 Moreover, once we have pulled our data from the database and have no need for running further queries, we should close our connection to the database.
