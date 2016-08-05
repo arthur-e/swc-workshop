@@ -502,6 +502,11 @@ Thus, the order of operations in this query is:
 - `SELECT` the specified columns `FROM` the table and its joined tables;
 - Finally, `GROUP` the results `BY` the unique values of a specified column.
 
+### Different Kinds of Joins
+
+There are multiple ways of joining two (or more) tables together with `JOIN`.
+[See this graphic](https://commons.wikimedia.org/wiki/File:SQL_Joins.svg) for an illustration of what's possible with SQL `JOIN`.
+
 ### Aliases
 
 **As queries get more complex, table and column names can get long and unwieldy. Just as we saw with column names, we can use aliases to assign new names to tables.**
@@ -530,7 +535,7 @@ HAVING max_life_exp > 80;
 
 **Note that while the `WHERE` clause comes before the `GROUP BY` clause, the `HAVING` clause comes after. One way to think about this is: the data are filtered (`WHERE`), some columns are retrieved (`SELECT`), then summarized in groups (`GROUP BY`); finally, we only select some of these groups (`HAVING`).**
 
-### Saving Queries
+## Saving Queries
 
 It is not uncommon to repeat the same operation more than once, for example for monitoring or reporting purposes.
 SQL comes with a very powerful mechanism to do this: views.
@@ -585,6 +590,35 @@ DROP TABLE new_table;
 ```
 
 **We can export the results of our query** by clicking **Actions** -> **Save Result (CSV) to File.**
+
+## Combining Queries
+
+What if we need to combine the results of two queries?
+For instance, what if we knew there was a systematic error in the population estimates prior to 1967?
+
+```sql
+SELECT country, year, pop + 1000
+  FROM surveys
+ WHERE year < 1967
+```
+
+How do we combine the records from these years with the records from later years?
+We only want to apply the population adjustment to the records from before 1967.
+
+```sql
+SELECT country, year, pop + 1000 AS pop
+  FROM surveys
+ WHERE year < 1967
+UNION
+SELECT country, year, pop
+  FROM surveys
+ WHERE year >= 1967
+```
+
+Some things to note:
+
+* We can use `UNION` multiple times to combine, row-wise, as many queries as we want.
+* Every query we combine in this way must have the same columns in the output.
 
 ## Connecting to SQL in R
 
@@ -665,7 +699,7 @@ dbDisconnect(conn)
 rm(conn)
 ```
 
-## Advanced Topics
+## Advanced Challenges
 
 Recall the questions we asked at the beginning.
 
@@ -700,35 +734,6 @@ SELECT c.continent, avg(s.lifeExp)
  WHERE s.year >= 2000
  GROUP BY continent
 ```
-
-### Unions of Results
-
-What if we need to combine the results of two queries?
-For instance, what if we knew there was a systematic error in the population estimates prior to 1967?
-
-```sql
-SELECT country, year, pop + 1000
-  FROM surveys
- WHERE year < 1967
-```
-
-How do we combine the records from these years with the records from later years?
-We only want to apply the population adjustment to the records from before 1967.
-
-```sql
-SELECT country, year, pop + 1000 AS pop
-  FROM surveys
- WHERE year < 1967
-UNION
-SELECT country, year, pop
-  FROM surveys
- WHERE year >= 1967
-```
-
-Some things to note:
-
-* We can use `UNION` multiple times to combine, row-wise, as many queries as we want.
-* Every query we combine in this way must have the same columns in the output.
 
 ## Conclusion and Summary
 
