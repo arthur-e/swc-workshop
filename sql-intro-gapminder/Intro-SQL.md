@@ -376,10 +376,10 @@ There are many other aggregation functions available in SQL.
 * `min()`
 * `sum()`
 
-Let's use one query to output the total population, average population, and then the minimum and maximum population.
+Let's use one query to output the average population, the minimum and maximum population.
 
 ```sql
-SELECT pop, avg(pop), min(pop), max(pop)
+SELECT avg(pop), min(pop), max(pop)
   FROM surveys;
 ```
 
@@ -392,7 +392,23 @@ SELECT country, avg(pop), min(pop), max(pop)
  GROUP BY country;
 ```
 
-**Note that if we add any other fields to our `SELECT` clause, we have to use aggregation functions on them but any fields in our `GROUP BY` clause do not need such functions.**
+What happens if we add the `year` column to this query?
+
+```sql
+SELECT country, year, avg(pop), min(pop), max(pop)
+  FROM surveys
+ GROUP BY country;
+```
+
+**The `year` columns' values seem like they're randomly picked. In fact, that's pretty much the case.**
+We've aggregated by country so the data are summarized across years; there is no longer a meaning to `year` in the results of this query.
+We shouldn't have been allowed to include the `year` column in this query.
+
+**Actually, this is non-standard behavior for SQLite and MySQL, another database management system. Any other database management system would not have allowed us to run this query; it would have thrown an error instead.**
+Even though SQLite and MySQL allow this, we should avoid this behavior because it leads to meaningless columns in the output.
+When using `GROUP BY`, every field in our `SELECT` statement should either by in the `GROUP BY` statement or should be called with an aggregation function.
+
+### Ordering Aggregates
 
 We can also order the aggregated rows in the output.
 
@@ -718,4 +734,5 @@ Some things to note:
 
 ### Other Resources
 
-* SQL: Visual Quickstart Guide (by Chris Fehily, 3rd Edition)
+* On correct aggregation: [Do you use GROUP BY correctly?](https://www.psce.com/blog/2012/05/15/mysql-mistakes-do-you-use-group-by-correctly/)
+* The best book on SQL is [SQL: Visual Quickstart Guide (by Chris Fehily, 3rd Edition)](http://www.fehily.com/books/sql_vqs_3.html)
