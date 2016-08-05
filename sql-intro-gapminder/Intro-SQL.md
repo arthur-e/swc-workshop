@@ -504,10 +504,31 @@ SELECT *
 
 In SQLite Manager, we can remind ourselves of how we wrote this query by looking at the tree view on the left, expanding the **Views** tree, right-clicking on the view **maximum_life_expectancies**, and clicking **"Modify View"** in the menu.
 
-To get rid of a view:
+**When we save a View, the results of the query are not saved; the query is re-run each time we select from that view.**
+If the query takes a long time to run, we might want to store the output as a table.
+We can store the result of our query as a table using a `CREATE TABLE` clause.
+
+```sql
+CREATE TABLE new_table AS
+SELECT *
+  FROM maximum_life_expectancies;
+```
+
+SQLite doesn't support doing this with the `INTO` keyword but other databases, such as PostgreSQL, allow this usage:
+
+```sql
+-- Not for SQLite
+SELECT *
+  INTO new_table
+  FROM maximum_life_expectancies;
+```
+
+Unless the query takes a long time to run, we are better off staying with a View because it doesn't storing the table on the hard drive.
+To get rid of a view or table:
 
 ```sql
 DROP VIEW maximum_life_expectancies;
+DROP TABLE new_table;
 ```
 
 **We can export the results of our query** by clicking **Actions** -> **Save Result (CSV) to File.**
