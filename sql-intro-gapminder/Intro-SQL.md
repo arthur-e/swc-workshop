@@ -424,7 +424,7 @@ Write queries that return:
 
 To combine data from two tables we can use a `JOIN` clause, which comes after the `FROM` clause.
 We also need to tell the computer which columns provide the link between the two tables using the word `ON`.
-**The intent here is to combine the data in the in `countries` table with the data in the `surveys` table.**
+**The intent here is to combine the data in the `countries` table with the data in the `surveys` table.**
 What we want is to join the data with the same country name.
 
 ```sql
@@ -449,6 +449,43 @@ SELECT countries.continent, surveys.country, surveys.lifeExp
 Write a query that returns the continent, the average life expectancy and the maximum population for each continent.
 **Bonus:** Do this just for the year 1952 then for the year 2007.
 
+### Aggregation and the Order of Operations
+
+Let's examine the answer to the challenge question above.
+
+```sql
+SELECT countries.continent,
+       avg(surveys.lifeExp), max(surveys.pop)
+  FROM surveys
+  JOIN countries
+    ON surveys.country = countries.country
+ WHERE surveys.year = 1952
+ GROUP BY countries.continent;
+```
+
+**It's important that we understand how this query is processed by the database.**
+We know that the `WHERE` clause is one of the first things the database manager evaluates.
+However, we've included a `JOIN` statement here.
+Are we able to filter on joined columns?
+Let's modify the previous query so that we're aggregating across countries for a single continent in each year.
+
+```sql
+SELECT surveys.year, avg(surveys.lifeExp)
+  FROM surveys
+  JOIN countries
+    ON surveys.country = countries.country
+ WHERE countries.continent = 'Americas'
+ GROUP BY surveys.year;
+```
+
+Since this worked, we can conclude that the database manager evaluates the `JOIN` before it evaluates the `WHERE` clause.
+Thus, the order of operations in this query is:
+
+- `JOIN` the tables together `ON` the matching columns;
+- Filter entries according to the `WHERE` condition;
+- `SELECT` the specified columns `FROM` the table and its joined tables;
+- Finally, `GROUP` the results `BY` the unique values of a specified column.
+
 ### Aliases
 
 **As queries get more complex, table and column names can get long and unwieldy. Just as we saw with column names, we can use aliases to assign new names to tables.**
@@ -465,7 +502,7 @@ SELECT s.year, s.country
 ### Filtering on Aggregates
 
 We've now seen how a `WHERE` clause can be used to filter the results according to some criteria.
-We can also filter aggregated results with a `HAVING` clause.
+**Yet the `GROUP BY` clause is executed after the `WHERE` clause is executed. Instead of `WHERE`, we can filter aggregated results with a `HAVING` clause.**
 For instance, we can find those countries with the highest life expectancy at any time with the following country.
 
 ```sql
@@ -475,7 +512,7 @@ SELECT country, max(lifeExp) AS max_life_exp
 HAVING max_life_exp > 80;
 ```
 
-**Note that while the `WHERE` clause comes before the `GROUP BY` clause, the `HAVING` clause comes after. One way to think about this is: the data are retrieved (`SELECT`), can be filtered (`WHERE`), then summarized in groups (`GROUP BY`); finally, we only select some of these groups (`HAVING`).**
+**Note that while the `WHERE` clause comes before the `GROUP BY` clause, the `HAVING` clause comes after. One way to think about this is: the data are filtered (`WHERE`), some columns are retrieved (`SELECT`), then summarized in groups (`GROUP BY`); finally, we only select some of these groups (`HAVING`).**
 
 ### Saving Queries
 
