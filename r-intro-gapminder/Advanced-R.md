@@ -262,7 +262,7 @@ Using RStudio's project management pane at the lower-right, create a new folder 
 
 "We also set up our project to integrate with Git, putting it under version control..."-->
 
-## Data Structures
+## Starting with Data Structures
 
 Let's load in some data.
 
@@ -298,7 +298,16 @@ df <- data.frame(
   x2 = c(1, 'red', 2))
 ```
 
-We can confirm that our `gapminder` data frame is a collection of vectors with a consistent data type by examining the structure with the `str()` function.
+A data structure in R that is very similar to vectors is the `list` class.
+**Unlike vectors, lists can contain elements of varying data types and even varying classes.**
+
+```r
+list(99, TRUE 'balloons')
+list(1:10, c(TRUE, FALSE))
+```
+
+A data frame is like a list in that it is a collection of multiple vectors, each with a different data type.
+We can confirm this with the `str()` function.
 
 ```r
 str(gapminder)
@@ -389,11 +398,11 @@ Notice that in the `levels()` approach, three important steps occur:
 - We convert these levels to numeric values using as.numeric`(levels(f))`;
 - We then access these numeric values using the underlying integers of the vector `f` inside the square brackets.
 
-### Challenge: Cross-Tabulation
+### Challenge: Tabulation
 
 The function `table()` tabulates and cross-tabulates observations.
 Tabulation can be used to create a quick bar plot of your data.
-In this case, we can quickly plot the number of countries in each continent in the data.
+In this case, we can quickly plot the number of observations in each continent in the data.
 Answer the following questions after tabulating and plotting the continents in the Gapminder data.
 
 ```r
@@ -404,6 +413,295 @@ barplot(tabulation)
 
 - In which order are the continents listed?
 - How can you re-order the continents so that they are plotted in order of highest frequency to lowest frequency (from left to right)?
+
+### Cross Tabulation
+
+Cross tabulation can aid in checking the assumptions about our dataset.
+Cross tabulation tallies the number of corresponding rows for each pair of unique values in two vectors.
+Here, we can use it to check that the expected number of records exist for each continent in each year.
+Because each country appears only once a year, these numbers correspond to the number of countries recorded for that continent in that year.
+
+```r
+table(gapminder$year, gapminder$continent)
+```
+
+To avoid re-writing `gapminder` multiple times in this function call, we can use the helper function `with`.
+
+```r
+with(gapminder, table(year, continent))
+```
+
+The `with` function signals to R that the names of variables like `year` and `continent` can be found among the columns of the `gapminder` data frame.
+Writing our cross-tabulation this way makes it easier to read at a glance.
+
+## Data Frames
+
+By default, when building or importing a data frame, the columns that contain characters (i.e., text) are coerced (converted) into the factor data type.
+Depending on what you want to do with the data, you may want to keep these columns as character.
+To do so, `read.csv()` and `read.table()` have an argument called `stringsAsFactors` which can be set to `FALSE`.
+
+```r
+gapminder2 <- read.csv('data/gapminder-FiveYearData.csv', stringsAsFactors = FALSE)
+str(gapminder2)
+```
+
+If you want to set this behavior as the new default throughout your script, you can set it in the `options()` function.
+
+```r
+options(stringsAsFactors = FALSE)
+```
+
+If you choose to set any `options()`, make sure you do so at the very top of your R script so that it is easy for others to see that you're deviating from the default behavior of R.
+
+There are several questions we can answer about our data frames with built-in functions.
+
+```r
+dim(gapminder)
+nrow(gapminder)
+ncol(gapminder)
+names(gapminder)
+rownames(gapminder)
+summary(gapminder)
+```
+
+Most of these functions are "generic;" that is, they can be used on other types of objects besides `data.frame`.
+
+## Sequences and Indexing
+
+Recall that in R, the colon character is a special function for creating sequences.
+
+```r
+1:10
+```
+
+This is a special case of the more general `seq()` function.
+
+```r
+seq(1, 10)
+seq(1, 10, by = 2)
+```
+
+**Integer sequences like these are useful for extracting data from our data frames.**
+Our survey data frame has rows and columns (it has 2 dimensions), if we want to extract some specific data from it, we need to specify the "coordinates" we want from it.
+Row numbers come first, followed by column numbers.
+
+```r
+# First column of gapminder
+gapminder[1]
+
+# First element of first column
+gapminder[1, 1]
+
+# First element of fifth column
+gapminder[1, 5]
+
+# First three elements of the fifth column
+gapminder[1:3, 5]
+
+# Third row
+gapminder[3, ]
+
+# Fifth column
+gapminder[, 5]
+
+# First six rows
+gapminder[1:6, ]
+```
+
+We can also use negative number to exclude parts of a data frame.
+
+```r
+# The first column removed
+head(gapminder[, -1])
+
+# The second through fourth columns removed
+head(gapminder[, -2:-4])
+```
+
+Recall that to subset the data frame's entire columns we can use the column names.
+
+```r
+gapminder['year']   # Result is a data frame
+gapminder[, 'year'] # Result is a vector
+gapminder$year      # Result is a vector
+```
+
+### Challenge
+
+The function `nrow()` on a `data.frame` returns the number of rows. Use it, in conjunction with `seq()` to create a new `data.frame` that includes every 10th row of the `gapminder` data frame starting at row 10 (10, 20, 30, ...).
+
+-------------------------------------------------------------------------------
+
+## Checkpoint: Data Structures in R
+
+**Now you should be familiar with the following:**
+
+* The different types of data in R.
+* The different **data structures** that we can use to organize our data in R.
+* How to ask basic questions about the structure and size of our data in R.
+
+-------------------------------------------------------------------------------
+
+## Subsetting and Aggregating Data
+
+The Gapminder data contain surveys of each country's per-capita GDP and life expectancy every five years.
+Let's learn how to use R's advanced data manipulation and aggregation features to answer a few questions about the Gapminder data.
+
+- Which countries had a life expectancy lower than 30 years of age in 1952?
+- What was the mean per-capita GDP between 2002 and 2007 for each country?
+- What is the range in life expectancy for each continent?
+- How much has life expectancy changed in each country from 1952 to 2007?
+
+These are problems of aggregation, fundamentally,
+**To answer these questions, we'll combine relatively simple tasks in R together, progressively building towards a more complex answer.**
+
+### Subsetting Data Frames
+
+To answer our first question, we need to learn about subsetting data frames.
+Recall our comparison operators; we want to find those entries of the `lifeExp` column that are less than 30.
+
+```r
+gapminder$lifeExp < 30
+```
+
+That's a lot of output!
+In fact, there's one logical value for every row in the data frame.
+This makes sense; we basically performed a calculation on the `lifeExp` column, comparing every value in that column to 30.
+The result is a logical vector with `TRUE` wherever the `lifeExp` value is less than 30 and `FALSE` elsewhere.
+
+**Thus, when we subset the rows of `gapminder` with this logical vector, we obtain only those rows that matched.**
+Finally, we specified we just wanted the `country` column in this result.
+
+```r
+gapminder[gapminder$lifeExp < 30, 'country']
+```
+
+This is the best way to subset data frames when we're writing a reusable R script.
+However, when we're using R interactively as part of **exploratory data analysis,** it may be easier to use the `subset()` function.
+
+```r
+subset(gapminder, lifeExp < 30, select = 'country')
+```
+
+Note that, unlike our bracket notation, the `subset()` function returns a data frame for an input data frame.
+`subset()` can be easier to use, especially when we have multiple conditionals.
+For instance, if we want to find the countries where life expectancy was lower than 30 years of age in 1952, not just in any year...
+
+```r
+subset(gapminder, lifeExp < 30 & year == 1952, select = 'country')
+```
+
+### The aggregate() Function
+
+To answer the other questions we asked, we need to be able to summarize values in one column for each of the unique values in another column.
+That is, we need to **aggregate** our data, and there's a built-in function in R to do just this.
+
+```r
+?aggregate
+```
+
+**Note that the `by` argument in `aggregate()` takes a list of unique values "as long as the variables in the data frame x."**
+This means we can call `aggregate()` on two separate vectors, even if we don't have a data frame, as long as those vectors are the same length.
+Recall that we wanted to know the mean per-capita GDP between 2002 and 2007 for each country.
+Thus, we need to start by subsetting the `gapminder` data frame to just those years.
+
+```r
+gm.subset <- gapminder[gapminder$year %in% c(2002, 2007),]
+```
+
+Now we can provide the column the be aggregated, `gdpPercap`, and the column with the unique group values, `country`, to the `aggregate()` function.
+
+```r
+aggregate(gm.subset$gdpPercap, by = list(gm.subset$country), FUN = mean)
+```
+
+### Function Application
+
+Another way we can aggregate data in R is with function application.
+R has several built in functions like `sapply()`, `tapply()`, and `apply()` that apply a function over a list, vector, or data frame.
+
+Of these functions, `sapply()` is the simplest.
+We can use it, for instance, with the `class()` function to check the data type of every column in our data frame.
+Because a data frame is really a list of vectors, `sapply()` applies the `class()` function to each vector.
+
+```r
+sapply(gapminder, class)
+```
+
+With the more general `apply()` function, we can aggregate across the rows or columns of a data frame.
+We have to tell `apply()` which we're aggregating over, however: rows or columns.
+
+```r
+?apply
+```
+
+This is the `MARGIN` argument of `apply()`.
+Recall that when indexing data frames, we specify the row index before the column index.
+Thus, the number 1 is the margin for row application and the number 2 is for column application.
+For instance, we can reproduce the `sapply()` example with `apply()` like so.
+
+```r
+apply(gapminder, 2, class)
+```
+
+We can also calculate summary statistics over multiple numeric columns, such as the last two columns of `gapminder`.
+
+```r
+apply(gapminder[,5:6], 2, mean)
+```
+
+**However, this kind of aggregation isn't very meaningful for this dataset. We probably don't care about the mean life expectancy or per-capita GDP across a period of over 50 years.**
+Instead, we'd like to summarize columns within predefined groups, like countries or continents.
+This is where `tapply()` comes in.
+
+```r
+?tapply()
+```
+
+We can see that, like `aggregate()`, we can specify the groups to aggregate within.
+Let's reproduce our result from `aggregate()` starting with the subset data, `gm.subset`.
+
+```r
+tapply(gm.subset$gdpPercap, gm.subset$country, FUN = mean)
+```
+
+Note that this output is formatted differently.
+This is because, unlike `aggregate()` which returns a vector, `tapply()` simplifies the data by default and returns an instance of the `array` class, a more general kind of vector.
+
+In addition to the built-in functions like `mean()`, we can provide any custom function to `tapply()`.
+For instance, we can use it to answer our question about how much life expectancy varies across each continent in 2007.
+Here, we use the `with()` function to subset our data before calling `tapply()`.
+
+```r
+with(gapminder[gapminder$year == 2007,], tapply(lifeExp,
+  INDEX = continent, FUN = function (values) {
+    max(values) - min(values)
+    }))
+```
+
+### The plyr Package
+
+The aggregation techniques we've seen so far are all built into base R.
+We can explore some alternative techniques that are available in third-party libraries developed by the R community.
+These **R packages** can be installed using the `install.packages()` function.
+Let's try to install the `plyr` package, which provides advanced data querying and aggregation.
+
+```r
+install.packages('plyr')
+```
+
+Now that we've installed the package, we can load it into our current R session with the `library()` function.
+
+```r
+library(plyr)
+```
+
+The `plyr` package has a number of useful functions including `summarize()` and `mutate()`.
+The `summarize()` function can be used to summarize our Gapminder within groups.
+
+```r
+output <- summarize(gapminder)
+```
 
 ## Applications
 
