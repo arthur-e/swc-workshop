@@ -74,7 +74,7 @@ That client is called SQLite Manager and it is available as a plug-in for Mozill
 2. We'll call our new database **gapminder.**
 3. SQLite3 manages databases that are stored as single files on a computer's file system. So, after we click **OK** we'll be prompted to save the database as a file. **Save it to your Desktop as `gapminder.sqlite`.**
 4. Start the import **Database** -> **Import.**
-5. Select the file to import: `gap-every-five-years.csv`
+5. Select the file to import: `gapminder-surveys.csv`
 6. Give the table a name that matches the table's contents. I like to choose a plural noun that describes the data represented by the rows. We'll call it **surveys.**
 7. Here the first row has column headings, so **check the 'First row contains column names' box**
 8. Use the defaults of **Fields separated by: comma** and **Fields enclosed by: double quotes.**
@@ -92,7 +92,7 @@ gdpPercap   | FLOAT
 
 ### Challenge: Importing the Countries Table
 
-Import the table `countries.csv` as a new a table called `countries`.
+Import the table `gapminder-countries.csv` as a new a table called `countries`.
 
 ## Basic Queries
 
