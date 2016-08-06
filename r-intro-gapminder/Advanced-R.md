@@ -915,6 +915,82 @@ gapminder %>%
     xlab = 'Mean Log10 Per-Capita GDP', ylab = 'Mean Life Expectancy')
 ```
 
+## Cleaning Data with tidyr
+
+There's one more question I want to answer about the gapminder data using pipes.
+How much did life expectancy change in each African country in the 40-year period between 1952 and 1992?
+**This is going to be harder to answer than our previous questions because of how our data are structured.**
+We can't use `summarize()` here because there is no way to distinguish between the years when we're aggregating values in a given column.
+We could assume that life expectancy increased in all cases and simply subtract the minimum value from the maximum value but our assumption may not hold; there might be some places where life expectancy, for whatever reason, decreased.
+
+The `tidyr` package in R has some additional functions for data cleaning and restructuring that can be combined with the pipelines we introduced in `dplyr`.
+
+```r
+install.packages('tidyr')
+```
+
+Following best practices, we'll build this analysis by starting with small parts that we understand.
+We know that we want to filter the data to the African continent and to the years 1952 and 1992.
+
+```r
+gapminder %>%
+  filter(continent == 'Africa') %>%
+  filter(year %in% c(1952, 1992)) %>%
+  head()
+```
+
+**If we break out the value of life expectancy for each year into its own columns, we can then simply use mutate to subtract the life expectancy in 1952 from the life expectancy in 1992.**
+This is what the `spread()` function does in the `tidyr` package.
+
+```r
+library(tidyr)
+gapminder %>%
+  filter(continent == 'Africa') %>%
+  filter(year %in% c(1952, 1992)) %>%
+  spread(year, lifeExp, sep = '.') %>%
+  head()
+```
+
+From this output, it looks like we now have separate columns but the rows need to be collapsed into one entry per country.
+We could do this with `summarize()` but there is an easier way.
+It turns out that `spread()` is pretty smart about this, we just need to ensure that the only variables in our data frame are the "key" and "value" variables and any non-unique grouping variable, like `country`.
+So, we `select()` these variables before we `spread()`.
+
+```r
+gapminder %>%
+  filter(continent == 'Africa') %>%
+  filter(year %in% c(1952, 1992)) %>%
+  select(country, year, lifeExp) %>%
+  spread(year, lifeExp, sep = '.') %>%
+  head()
+```
+
+Now we're ready to calculate the difference between the two years.
+
+```r
+gapminder %>%
+  filter(continent == 'Africa') %>%
+  filter(year %in% c(1952, 1992)) %>%
+  select(country, year, lifeExp) %>%
+  spread(year, lifeExp, sep = '.') %>%
+  mutate(life.exp.change = year.1992 - year.1952) %>%
+  head()
+```
+
+We can use the `arrange()` function to sort the output by a particular field.
+In this case, we want to look at those countries with the lowest gain in life expectancy at the top.
+
+```r
+gapminder %>%
+  filter(continent == 'Africa') %>%
+  filter(year %in% c(1952, 1992)) %>%
+  select(country, year, lifeExp) %>%
+  spread(year, lifeExp, sep = '.') %>%
+  mutate(life.exp.change = year.1992 - year.1952) %>%
+  arrange(life.exp.change) %>%
+  head()
+```
+
 ## Applications
 
 ### Batch Plot Creation
@@ -951,3 +1027,5 @@ for (variable in variables) {
 * [The R Inferno](http://www.burns-stat.com/pages/Tutor/R_inferno.pdf): A humorous and informative guide to some of the more advanced features and confounding behavior.
 * [Writing (Fast) Loops in R](http://faculty.washington.edu/kenrice/sisg/SISG-08-05.pdf)
 * [dplyr Cheat Sheet](http://www.rstudio.com/wp-content/uploads/2015/02/data-wrangling-cheatsheet.pdf)
+* A longer introduction to `plyr` and `dplyr` [using the same Gapminder data](http://stat545.com/block009_dplyr-intro.html).
+* More on using `dplyr` [to analyze the Gapminder data](http://stat545.com/block010_dplyr-end-single-table.html).
