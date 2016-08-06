@@ -300,6 +300,16 @@ However, this is much less common among R users.
 The most important thing is to be consistent in your use of one assignment operator than the other.
 There are places in R where it is less confusing to use the arrow form than than the equal sign, so the recommendation is to use the arrow form.
 
+```r
+# Argument assignment; no side effects
+mean(x = 1:10)
+x
+
+# Variable assignment; side effects!
+mean(x <- 1:10)
+x
+```
+
 We can determine what variables are in our environment by using the `ls()` function.
 Note that the `ls()` function takes no arguments but we still use the closed parentheses to call the function.
 
@@ -957,6 +967,33 @@ See if you can figure out how to change this (hint: read the documentation for `
 * How to ask basic questions about the structure and size of our data in R.
 
 -------------------------------------------------------------------------------
+
+## Applications
+
+### Batch Plot Creation
+
+```r
+gapminder <- read.csv('gapminder-FiveYearData.csv')
+
+# Quantize remaining variables
+variables <- c('pop', 'lifeExp', 'gdpPercap')
+
+labels <- c(
+  'pop' = 'Population',
+  'lifeExp' = 'Life Expectancy',
+  'gdpPercap' = 'Per-Capita GDP')
+
+plot.histogram <- function (var) {
+  hist(gapminder[,var], main = paste('Histogram of', labels[var]),
+    xlab = labels[var])
+}
+
+for (variable in variables) {
+  png(file=paste0('~/Desktop/histogram_', variable, '.png'), width=670, height=655)
+  plot.histogram(variable)
+  dev.off()
+}
+```
 
 ## Conclusion and Summary
 

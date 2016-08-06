@@ -369,7 +369,7 @@ SELECT round(sum(pop)/1000000.0, 3)
 
 There are many other aggregation functions available in SQL.
 
-* `avg()``
+* `avg()`
 * `first()`
 * `last()`
 * `max()`
@@ -688,7 +688,24 @@ summary(surveys)
 Let's see if we can do that same aggregation we were trying before with this dataset.
 
 ```r
-output <- dbGetQuery(conn, 'SELECT country, avg(gdpPercap) AS mean_gdp_per_capita, max(lifeExp) - min(lifeExp) AS life_exp_change FROM surveys GROUP BY country;')
+# Write a query to find:
+# * The range (max - min) of life expectancy (lifeExp) over all years
+# * The mean per-capita GDP (gdpPercap) over all years
+# for EACH country
+output <- dbGetQuery(conn,
+  "SELECT country, max(lifeExp) - min(lifeExp) AS life_exp_change,
+      avg(gdpPercap) AS mean_gdp_per_capita
+     FROM surveys
+    GROUP BY country;")
+head(output)
+
+# We can use the paste() function to include variables
+grouping_var <- 'country'
+output <- dbGetQuery(conn,
+paste("SELECT country, max(lifeExp) - min(lifeExp) AS life_exp_change,
+    avg(gdpPercap) AS mean_gdp_per_capita
+   FROM surveys
+  GROUP BY", grouping_var, ';')
 head(output)
 ```
 
