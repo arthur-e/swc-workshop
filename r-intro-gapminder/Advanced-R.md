@@ -71,7 +71,11 @@ If we open a text file that contains an R program, what would we call an *R scri
 
 ### Workflow in RStudio
 
-One way that we can use RStudio is in the interactive way I alluded to earlier.
+The basis of programming is that we write down instructions for the computer to follow and then we tell the computer to follow those instructions.
+We call the instructions *commands* and we tell the computer to follow the instructions by *executing* or *running* those commands.
+
+**Generally speaking, there are two ways we can execute commands in RStudio.**
+One way is to use RStudio **interactively,** as I alluded to earlier.
 That is, we can test R commands in the **R console** at the bottom right and maybe save those commands into an R script to run later.
 This works just fine but it can be tedious and error-prone.
 A better way would be for us to compose our R script in the file pane and then run the commands as a script or line-by-line.
@@ -246,7 +250,14 @@ The scientific process is naturally incremental and many projects start life as 
 * It allows you to easily upload your code when submitting a manuscript for publication.
 * It makes it easier to pick the project back up after a break.
 
-Here's an example layout suggested by Daniel Chen.
+[Here's one example.](http://www.datacarpentry.org/R-ecology-lesson/img/R-ecology-work_dir_structure.png)
+
+Use the `data/` folder to store your raw data and any intermediate datasets you may create.
+For the sake of **transparency and scientific provenance**, you should always keep your raw data around.
+Cleaning your data should be done with scripts that do not overwrite the original data.
+Therefore, the "cleaned" data should be kept in something like `data_output`.
+
+Here's another example layout suggested by Daniel Chen.
 
 ```
 project_root/
@@ -313,6 +324,8 @@ tail(gapminder)
 
 **The default data structure in R for tabular data is referred to as a data frame.**
 It has rows and columns just like a spreadsheet or a table in a database.
+A data frame is a collection of vectors of identical lengths.
+Each vector represents a column, and each vector can be of a different data type (e.g., characters, integers, factors).
 
 **In R, the columns of a data frame are represented as vectors.**
 Vectors in R are a sequence of values with the same data type.
@@ -323,7 +336,7 @@ x1 <- c(1, 2, 3)
 x2 <- c('a', 'b', 'c')
 ```
 
-We can construct data frames as a collection of vectors.
+We can construct data frames as a collection of vectors using the `data.frame()` function.
 Note that if we try to put unlike data types in a single vector, they get coerced to the most flexible data type.
 
 ```r
