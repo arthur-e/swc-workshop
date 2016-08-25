@@ -8,6 +8,40 @@ The goal of this lesson is to orient intermediate R programmers and experienced 
 R is commonly used in many scientific disciplines for statistical analysis.
 This workshop will focus on R as a general purpose programming language and data analysis tool, not on any specific statistical analysis.
 
+## Contents
+
+1. Introduction to RStudio
+  - RStudio Layout
+  - Workflow
+2. Quick Overview of R
+  - Mathematical Operations in R
+  - Data Types
+  - Machine Precision
+  - Variables and Assignment
+  - Functions
+  - Flow of Control
+3. Project Management with R Studio
+  - How RStudio Helps
+  - Best Practices
+4. Starting with Data Structures
+  - Reading in a CSV as a Data Frame
+  - Factors
+  - Tabulation
+  - Cross-Tabulation
+5. Data Frames
+6. Sequences and Indexing
+7. Subsetting and Aggregating Data
+  - Subsetting Data Frames
+  - `aggregate()`
+  - Function Application
+  - The `plyr` Package
+6. Analyzing data with `dplyr`
+  - `select()` and `filter()`
+  - Pipes
+  - Mutating Data
+  - Split-Apply-Combine with `dplyr`
+7. Cleaning Data with `tidyr`
+
 ### The Data
 
 In this workshop, we will be using a subset of [the Gapminder dataset](http://www.gapminder.org/).
