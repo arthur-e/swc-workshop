@@ -1038,6 +1038,284 @@ gapminder %>%
   head()
 ```
 
+-------------------------------------------------------------------------------
+
+## Checkpoint: Data Analysis in R
+
+**Now you should be familiar with the following:**
+
+* How to read in a CSV as an R `data.frame`
+* Factors and when to use them
+* Tabulation and cross-tabulation for checking assumptions about your data
+* Numeric sequences for indexing vectors and data frames
+* Subsetting data frames
+* Aggregating data frames with `aggregate()` or `apply()`
+* The `plyr` package for transforming data frames
+* The split-apply-combine workflow
+* How to use `dplyr` and pipes in a data analysis workflow
+
+Next, you'll see how to create plots of your data for checking assumptions, validating the data, and answering data analysis questions.
+
+-------------------------------------------------------------------------------
+
+## Data Visualization in R
+
+*Disclaimer: We will be using the functions in the ggplot2 package. R has powerful built-in plotting capabilities, but for this exercise, we will be using the ggplot2 package, which facilitates the creation of highly-informative plots of structured data.*
+
+`ggplot2` **is a plotting package that makes it simple to create complex plots from data in a dataframe.**
+It uses default settings, which help creating publication quality plots with a minimal amount of settings and tweaking.
+The "gg" in `ggplot2` refers to the "grammar of graphics," which is a design philosophy for how to describe visualizations with computer code.
+
+`ggplot` graphics are built step-by-step by adding new elements; in the `ggplot2` documentation, these elements include what are called "geometric objects," which are things like points, lines, and polygons that correspond to your data.
+**We'll first use `ggplot2` to create a plot of life expectancy versus per-capita GDP.**
+To create this plot with `ggplot2` we need to:
+
+1. Bind the plot to a specific data frame using the `data` argument;
+2. Define aesthetics (`aes`) that map variables in teh data to axes on the plot or to plotting size, shape, color, etc.;
+3. Add geometric objects; the graphical representation of the data in the plot (points, lines, polygons). To add a geometric objector or `geom`, use the `+` operator.
+
+```r
+ggplot(data = gapminder)
+```
+
+If this is all we instruct R to do, we see that the "Plots" tab in RStudio has appeared and a background has been rendered but nothing else.
+Basically, `ggplot2` has set up a plotting environment but nothing more.
+
+```r
+ggplot(data = gapminder, aes(x = gdpPercap, y = lifeExp))
+```
+
+After we add the aesthetics, we can see that the `x` and `y` axes have been set up with the appropriate ranges and drawn on the plot along with a grid that defines the coordinate space they span.
+
+```r
+ggplot(data = gapminder, aes(x = gdpPercap, y = lifeExp)) +
+  geom_point()
+```
+
+After adding a point layer, we can see the data plotted.
+
+The `+` in the `ggplot2` package is particularly useful because it allows us to modify existing `ggplot` objects.
+**This means we can easily set up plot "templates" and conveniently explore different types of plots,** so the above plot can also be generated with code like this:
+
+```r
+base <- ggplot(data = gapminder, aes(x = gdpPercap, y = lifeExp))
+base + geom_point()
+```
+
+Some things to note:
+
+- Anything you put in the `ggplot()` function can be seen by any `geom` layers that you add. i.e. these are universal plot settings. This includes the `x` and `y` axis you set up in `aes()`.
+- You can also specify aesthetics for a given geom independently of the aesthetics defined globally in the `ggplot()` function.
+
+```r
+ggplot(data = gapminder) +
+  geom_point(aes(x = gdpPercap, y = lifeExp))
+```
+
+### Building Plots Iteratively
+
+Building plots with `ggplot2` is typically an iterative process.
+We start by defining the dataset we'll use, lay the axes, and choose a geometric object.
+
+```r
+ggplot(data = gapminder, aes(x = gdpPercap, y = lifeExp)) +
+  geom_point()
+```
+
+Then, we start modifying this plot to extract more infromation from it.
+For instance, we can add transparency (alpha) to avoid overplotting.
+
+```r
+ggplot(data = gapminder, aes(x = gdpPercap, y = lifeExp)) +
+  geom_point(alpha = 0.3)
+```
+
+We can also add a color to the point.
+**Note that when these options are set outside of the aesthetics (outside of the `aes()` function), they apply uniformly to all data points, whereas those inside the aesthetics vary with the values in the data.**
+
+```r
+ggplot(data = gapminder, aes(x = gdpPercap, y = lifeExp)) +
+  geom_point(alpha = 0.3, color = 'blue')
+```
+
+**If we want color to vary with the values in our data frame, we need to assign a column of the data frame as the source for those values and then map those values onto an aesthetic within the `aes()` function.**
+For instance, let's let color vary by continent.
+
+```r
+ggplot(data = gapminder, aes(x = gdpPercap, y = lifeExp)) +
+  geom_point(alpha = 0.3, aes(color = continent))
+```
+
+### Challenge: Changing the Scale
+
+In many types of data, it is important to consider the *scale* of the observations.
+For example, it may be worth changing the scale of the axis to better distribute the observations in the space of the plot.
+Changing the scale of the axes is done similarly to adding/modifying other components (i.e., by incrementally adding commands).
+**Represent per-capita GDP on a log-10 scale.**
+For a hint, look up the help documentation on `scale_x_log10()`.
+
+### Boxplots
+
+With `ggplot2` we can easily create more sophisticated plots than a scatter plot.
+For instance, let's explore the distribution of life expectancy across continents.
+
+```r
+ggplot(data = gapminder, aes(x = continent, y = lifeExp)) +
+  geom_boxplot()
+```
+
+By adding points to the same plot, we can get a better idea of the number of measurements and of their distribution.
+
+```r
+ggplot(data = gapminder, aes(x = continent, y = lifeExp)) +
+  geom_boxplot() +
+  geom_point()
+```
+
+This isn't quite what we wanted.
+Because all the points are plotted at the same `x` axis coordinate, we're not realizing any value in plotting both the points and the box plots.
+**We can "jitter" the points in one direction so they are easier to see.**
+We can also disable the background fill of the boxplots for clarity.
+
+```r
+ggplot(data = gapminder, aes(x = continent, y = lifeExp)) +
+  geom_boxplot(alpha = 0) +
+  geom_jitter(alpha = 0.5, color = 'tomato')
+```
+
+### Challenge: Violin Plot
+
+Boxplots are useful summaries, but hide the *shape* of the distribution.
+For example, if there is a bimodal distribution, this would not be observed with a boxplot.
+An alternative to the boxplot is the violin plot (sometimes known as a beanplot), where the shape (of the density of points) is drawn.
+**Replace the box plot with a violin plot.**
+For a hint, look up the help documentation on `geom_violin()`.
+
+```r
+?geom_violin
+```
+
+### Plotting Time Series Data
+
+Let's calculate the mean life expectancy per year for each continent.
+To do that, we first need to group the data and then calculate the mean in each group.
+
+```r
+require(dplyr)
+annual.life.exp <- gapminder %>%
+  group_by(year, continent) %>%
+  summarize(mean.life.exp = mean(lifeExp))
+```
+
+Time series data can be visualized as a line plot with years on the `x` axis and counts on the `y` axis.
+
+```r
+ggplot(data = annual.life.exp, aes(x = year, y = mean.life.exp)) +
+  geom_line()
+```
+
+Unfortunately, this doesn't work because we end up plotting the data for all the continents together.
+We need to tell `ggplot2` to draw a line for each continent separately by modifying the aesthetic function to include a `group` keyword argument.
+
+```r
+ggplot(data = annual.life.exp, aes(x = year, y = mean.life.exp,
+    group = continent)) +
+  geom_line()
+```
+
+We can distinguish the continents by adding colors.
+
+```r
+ggplot(data = annual.life.exp, aes(x = year, y = mean.life.exp,
+    group = continent, color = continent)) +
+  geom_line()
+```
+
+### Faceting
+
+This works just fine but there's another way we can plot the continents together in order to clearly distinguish them.
+`ggplot2` has a special technique called *faceting* that allows to split one plot into multiple plots based on a factor included in the dataset.
+We will use it to make one plot for a time series for each continent.
+
+```r
+ggplot(data = annual.life.exp, aes(x = year, y = mean.life.exp,
+    group = continent, color = continent)) +
+  geom_line() +
+  facet_wrap(~ continent)
+```
+
+This is less useful with so few categories (facets) but what if we wanted to look at the correlation between per-capita GDP and life expectancy in each survey year?
+How would we construct this kind of plot?
+
+```r
+base <- ggplot(data = gapminder, aes(x = gdpPercap, y = mean.life.exp)
+base + geom_point()
+```
+
+Recall that a log-10 scale looks better on per-capita GDP.
+
+```r
+base + geom_point() +
+  scale_x_log10()
+```
+
+Now, we add a `facet_wrap()` to get a plot for each year.
+
+```r
+base + geom_point() +
+  scale_x_log10() +
+  facet_wrap(~ year)
+```
+
+**It looks as if the correlation between per-capita GDP and life expectancy has changed slightly over the years, resulting in two distinct groups of points in the most recent survey years.**
+To investigate this further, we could add color to the points.
+
+```r
+base + geom_point(aes(color = continent)) +
+  scale_x_log10() +
+  facet_wrap(~ year)
+```
+
+Finally, because plots are usually more readable with a white background, we can switch the theme.
+
+```r
+base + geom_point(aes(color = continent)) +
+  scale_x_log10() +
+  facet_wrap(~ year) +
+  theme_bw()
+```
+
+### Plot Customization
+
+**Challenge:** Take a look at [this cheatsheet](https://www.rstudio.com/wp-content/uploads/2015/08/ggplot2-cheatsheet.pdf) for `ggplot2` and think of ways to improve the last plot.
+You can write down some of your ideas as comments in the etherpad.
+
+Now, let's change the names of the axes to something more informative.
+
+```r
+base + geom_point(aes(color = continent)) +
+  scale_x_log10() +
+  facet_wrap(~ year) +
+  labs(title = 'Per-Capita GDP vs. Life Expectancy across Continents',
+    x = 'Life Expectancy (Years)',
+    y = 'Per-Capita GDP (USD)') +
+  theme_bw()
+```
+
+The axes now have more informative names, but their readibility can be improved by increasing the font size.
+We'll also make the legend text larger.
+
+```r
+base + geom_point(aes(color = continent)) +
+  scale_x_log10() +
+  facet_wrap(~ year) +
+  labs(title = 'Per-Capita GDP vs. Life Expectancy across Continents',
+    x = 'Life Expectancy (Years)',
+    y = 'Per-Capita GDP (USD)') +
+  theme_bw() +
+  theme(text = element_text(size = 16), legend.text = element_text(size = 16))
+```
+
 ## Applications
 
 ### Batch Plot Creation
