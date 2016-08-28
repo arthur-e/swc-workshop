@@ -41,6 +41,7 @@ This workshop will focus on R as a general purpose programming language and data
   - Mutating Data
   - Split-Apply-Combine with `dplyr`
 7. Cleaning Data with `tidyr`
+8. Visualization in R with `ggplot2`
 
 ### The Data
 
