@@ -99,7 +99,7 @@ As a shortcut, we can select all of the columns from a table using the wildcard:
 
 **Write a query to select the `plot_type` column from the `plots` table.**
 
-## Sorting and Removing Duplicates
+## Removing Duplicates
 
 Let's answer some real questions about this dataset.
 **For starters, what kind of animals (what taxa) were collected in these surveys?**
@@ -110,11 +110,139 @@ Let's answer some real questions about this dataset.
 
     sqlite> SELECT DISTINCT taxa FROM species;
 
-We can use this insight to answer another question.
-**In what years were surveys conducted?**
+Here, the results are returned in the order in which they appear in the table.
+**It's important to realize that the database manager doesn't return rows in a predictable order.**
+We'll see later on how we need to factor that into our construction of more complex queries.
+For now, you should know if we want to specify the order of rows in the output, we need to use the `ORDER BY` clause.
+**For instance, if we want to sort the results alphabetically by taxa, we would write:**
+
+    sqlite> SELECT DISTINCT taxa FROM species ORDER BY taxa;
+
+For descending order, we add `DESC` after the column name.
+
+    sqlite> SELECT DISTINCT taxa FROM species ORDER BY taxa DESC;
+
+By default, the output is in ascending order.
+That means there is an implicit `ASC` key after each column name in the `ORDER BY` clause.
+
+    sqlite> SELECT DISTINCT taxa FROM species ORDER BY taxa ASC;
+
+We can order by multiple columns.
+**For instance, we can sort the species list first by taxa and then by genus name within each taxonomical group.**
+
+    sqlite> SELECT DISTINCT taxa, genus FROM species ORDER BY taxa, genus;
+
+**Note that we don't actually have to display a column to order by it.**
+
+    sqlite> SELECT DISTINCT genus FROM species ORDER BY taxa, genus;
+
+Let's answer another question: **In what years were surveys conducted?**
 
     sqlite> SELECT DISTINCT year FROM surveys;
 
 We can use the keyword `DISTINCT` with two columns in order to return all unique pairs.
 
-    sqlite SELECT DISTINCT year, species_id FROM surveys;
+    sqlite> SELECT DISTINCT year, species_id FROM surveys;
+
+## Calculating New Values
+
+In addition to selecting columns that already exist in our table, we can calculate values in a new column as part of our queries.
+**Let's say, for instance, that we want to look at the animal weights on different days in units of kilograms instead of grams.**
+
+    SELECT year, month, day, weight / 1000.0
+      FROM surveys;
+
+When we run the query, the expression `weight / 1000.0` is evaluated for each row and appended to that row, in a new column.
+**Why did I write one-thousand as `1000.0` instead of `1000`?**
+
+    SELECT year, month, day, weight / 1000
+      FROM surveys;
+
+Expressions can use any fields, any arithmetic operators `(+, -, *, and /)` and a variety of built-in functions.
+**For example, we could round the values to make them easier to read.**
+
+    SELECT plot_id, species_id, sex, weight, round(weight / 1000.0, 2)
+      FROM surveys;
+
+### Challenge: Changing the Units
+
+Write a query that returns the `year`, `month`, `day`, `species_id` and `weight` in milligrams.
+Remember that the units stored in the database are grams.
+
+## Filtering
+
+**One of the most powerful features of a database is the ability to filter data, i.e., to select only those records that match certain criteria.**
+For example, let's say we only want data for the species *Dipodomys merriami*, which has a species code of `DM`.
+We need to add a `WHERE` clause to our query:
+
+    SELECT * FROM surveys
+     WHERE species_id = 'DM';
+
+**The database manager executes this query in two stages.**
+
+- First, it checks at each row in the `surveys` table to see which ones satisfy the `WHERE` clause.
+- It then uses the column names following the `SELECT` keyword to determine which columns to display.
+
+This processing order means that we can filter records using WHERE based on values in columns that aren't then displayed.
+Here, we select all the weight measurements since 2000.
+
+    SELECT species_id, weight FROM surveys
+     WHERE year >= 2000;
+
+If we want to combine the last two queries, we can use the keywords `AND` and `OR`.
+
+    SELECT * FROM surveys
+     WHERE (year >= 2000) AND (species_id = 'DM');
+
+**Note that while the parentheses are not needed here, they make our queries much easier to read. Also, when we use `AND` and `OR` together they do become necessary to ensure that the database manager combines the conditional statements in the way we intended.**
+
+### Challenge: Filtering
+
+Write a query that returns the `day`, `month`, `year`, `species_id`, and `weight` (in kilograms) for individuals caught in Plot 1 that weigh more than 75 grams.
+
+## Building More Complex Queries
+
+**Let's say we want to select the records for all *Diopodomys* species.**
+We could write the query this way...
+
+    SELECT * FROM surveys
+     WHERE (year >= 2000) AND (species_id = 'DO' OR species_id = 'DM' OR species_id = 'DS');
+
+However, this is pretty tedious, and tedium is what we're trying to avoid by using computers!
+
+    SELECT * FROM surveys
+     WHERE (year >= 2000) AND (species_id IN ('DM', 'DO', 'DS'));
+
+**As we begin to build more complex queries, it's best to...**
+
+- Start with something simple;
+- Then add more clauses one by one;
+- Testing their effects as we go along.
+
+For complex queries, this is a good strategy, to make sure you are getting what you want.
+Sometimes it might help to take a subset of the data that you can easily see in a temporary database to practice your queries on before working on a larger or more complicated database.
+
+**When the queries become more complex, it can be useful to add comments.**
+In SQL, comments are started by `--`, and end at the end of the line.
+
+    -- Get post-2000 data on Dipodomys' species
+    SELECT * FROM surveys
+     WHERE year >= 2000
+    -- There are 3 Dipodomys species in the area
+       AND species_id IN ('DM', 'DO', 'DS');
+
+### Challenge: Putting it All Together
+
+Let's try to combine what we've learned so far in a single query.
+Using the `surveys` table write a query to display the three date fields, `species_id`, and `weight` in kilograms (rounded to two decimal places) for individuals captured in 1999, ordered alphabetically by the `species_id`.
+
+    SELECT year, month, day, species_id, round(weight / 1000.0, 2)
+      FROM surveys
+     WHERE year = 1999
+     ORDER BY species_id;
+
+**It's important we understand the order in which the database manager executes these statements.**
+
+1. Filtering rows according to `WHERE`;
+2. Sorting results according to `ORDER BY`;
+3. Displaying requested columns or expressions.
