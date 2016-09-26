@@ -213,6 +213,12 @@ However, this is pretty tedious, and tedium is what we're trying to avoid by usi
     SELECT * FROM surveys
      WHERE (year >= 2000) AND (species_id IN ('DM', 'DO', 'DS'));
 
+**In this case, because all the species IDs start with the same letter, we can also filter by partial matches using the wildcard character.**
+When we use partial matching, we have to use the `LIKE` keyword.
+
+    SELECT * FROM surveys
+     WHERE (year >= 2000) AND (species_id LIKE 'D%');
+
 **As we begin to build more complex queries, it's best to...**
 
 - Start with something simple;
@@ -228,8 +234,8 @@ In SQL, comments are started by `--`, and end at the end of the line.
     -- Get post-2000 data on Dipodomys' species
     SELECT * FROM surveys
      WHERE year >= 2000
-    -- There are 3 Dipodomys species in the area
-       AND species_id IN ('DM', 'DO', 'DS');
+    -- All of Dipodomys' species IDs and no others begin with the letter D
+       AND (species_id LIKE 'D%');
 
 ### Challenge: Putting it All Together
 
@@ -246,3 +252,50 @@ Using the `surveys` table write a query to display the three date fields, `speci
 1. Filtering rows according to `WHERE`;
 2. Sorting results according to `ORDER BY`;
 3. Displaying requested columns or expressions.
+
+## Aggregation
+
+**Aggregation allows us to combine results by grouping records based on value and calculating combined values in groups.**
+Let's go to the surveys table and find out how many individuals there are.
+Using the wildcard simply counts the number of records (rows).
+
+    SELECT count(*) FROM surveys;
+
+We can also calculate the total weight of all those individuals!
+
+    SELECT count(*), sum(weight)
+      FROM surveys;
+
+Let's output this number in kilograms rounded to three decimal places.
+
+    SELECT round(sum(weight) / 1000.0, 3)
+      FROM surveys;
+
+There are other aggregation functions that allow us to compute summary statistics.
+
+    SELECT min(weight), max(weight), avg(weight)
+      FROM surveys;
+
+These numbers may be useful for validating or exploring our data; for instance, is the maximum weight 99 a real weight here?
+But these numbers aren't very meaningful scientifically because they span so many dissimilar species and survey years.
+**However, we can calculate aggregates within groups using a `GROUP BY` clause.**
+
+    SELECT species_id, count(species_id)
+      FROM surveys
+     GROUP BY species_id;
+
+`GROUP BY` tells SQL what field or fields we want to use to aggregate the data.
+**If we want to group by multiple fields, we give `GROUP BY` a comma-separated list.**
+
+    SELECT species_id, sex, count(species_id)
+      FROM surveys
+     GROUP BY species_id, sex;
+
+## Challenge: Aggregation
+
+Write queries that return:
+
+- How many individuals of each species were counted in each year?
+- What is the average weight of each species in each year?
+
+Can you modify the above queries combining them into one?
