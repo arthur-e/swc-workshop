@@ -253,6 +253,58 @@ Using the `surveys` table write a query to display the three date fields, `speci
 2. Sorting results according to `ORDER BY`;
 3. Displaying requested columns or expressions.
 
+## Missing Data
+
+Real-world data are never complete--there are always holes.
+**Databases represent these holes using a special value called `NULL`.**
+`NULL` is not zero, `NULL` is not False, and `NULL` is not the emptry string; it is a one-of-a-king value that means "nothing here."
+Dealing with `NULL` requires a few special tricks and some careful thinking.
+
+To start, let's look at the first 10 rows in the `surveys` table.
+**We can use the `LIMIT` keyword to limit our results to the given number of rows.**
+
+    SELECT *
+      FROM surveys LIMIT 10;
+
+It appears that the record with `record_id` equal to 7 is missing a `hindfoot_length` or, rather, the hindfoot length is `NULL`.
+`NULL` doesn't behave like other values.
+**How might we try to find other records like this where the `hindfoot_length` column is null?**
+
+    SELECT * FROM surveys WHERE hindfoot_length = NULL;
+    SELECT * FROM surveys WHERE hindfoot_length != NULL;
+    SELECT 2 = 2;
+    SELECT 2 = 3;
+    SELECT 2 = NULL;
+    SELECT NULL = NULL;
+
+It turns out, we need a special test for `NULL`.
+
+    SELECT *
+      FROM surveys
+     WHERE year = 1977 AND hindfoot_length IS NULL;
+
+    SELECT *
+      FROM surveys
+     WHERE year = 1977 AND hindfoot_length IS NOT NULL;
+
+`NULL` can make trouble for some of queries.
+Suppose we want to see all the records in 1977 but exclude those of a certain species.
+
+    SELECT *
+      FROM surveys
+     WHERE year = 1977 AND species_id NOT LIKE 'D%';
+
+**What we don't get in this query are all those records where `species_id` is `NULL`.**
+To get those records, we need to add another condition.
+
+    SELECT *
+      FROM surveys
+     WHERE year = 1977 AND (species_id NOT LIKE 'D%' OR species_id IS NULL);
+
+Similarly, what is wrong with the following query?
+
+    SELECT * FROM surveys WHERE species_id IN ('OX', NULL);
+
 ## Aggregation
 
 **Aggregation allows us to combine results by grouping records based on value and calculating combined values in groups.**
@@ -266,19 +318,15 @@ We can also calculate the total weight of all those individuals!
     SELECT count(*), sum(weight)
       FROM surveys;
 
-Let's output this number in kilograms rounded to three decimal places.
-
-    SELECT round(sum(weight) / 1000.0, 3)
-      FROM surveys;
-
 There are other aggregation functions that allow us to compute summary statistics.
 
     SELECT min(weight), max(weight), avg(weight)
       FROM surveys;
 
 These numbers may be useful for validating or exploring our data; for instance, is the maximum weight 99 a real weight here?
-But these numbers aren't very meaningful scientifically because they span so many dissimilar species and survey years.
-**However, we can calculate aggregates within groups using a `GROUP BY` clause.**
+It's also kind of neat to think about the total weight or biomass that has entered this survey.
+But these numbers aren't very meaningful scientifically because they span so many survey years and so many dissimilar species.
+**If we want to aggregate within groups, such as within years or within species, we can add a `GROUP BY` clause to our query.**
 
     SELECT species_id, count(species_id)
       FROM surveys
@@ -291,7 +339,7 @@ But these numbers aren't very meaningful scientifically because they span so man
       FROM surveys
      GROUP BY species_id, sex;
 
-## Challenge: Aggregation
+### Challenge: Aggregation
 
 Write queries that return:
 
@@ -299,3 +347,106 @@ Write queries that return:
 - What is the average weight of each species in each year?
 
 Can you modify the above queries combining them into one?
+
+### Care in Aggregation
+
+Let's say we want to find out the average weight of species `OT` in each year and we write a query like this.
+
+    SELECT species_id, year, sex, avg(weight)
+      FROM surveys
+     WHERE species_id = 'OT'
+     GROUP BY year;
+
+**We absent-mindedly included the `sex` column, maybe because we were typing quickly and we also wanted to group within the sexes, but we forgot to include the `sex` column in the `GROUP BY` clause.**
+
+- What does the `sex` column mean in the context of this query?
+- Why is it populated?
+
+When the `GROUP BY` clause is processed by the database manager, it groups the records that correspond to the groups we defined.
+Then, the database manager has to figure out what values should appear in each column for each group.
+In the `SELECT` clause we specified:
+
+- `species_id`: This is easy because of our `WHERE` clause: there is only one value to choose from.
+- `year`: This is also easy, because we grouped by this column; there should be one unique value in this column for each output row.
+- `avg(weight)`: Here, the database manager takes the mean of each group of weights for each year.
+
+**The problem is that the database manager wasn't told how to aggregate the `sex` field.**
+When SQLite is asked to aggregate a field but isn't told how to do so, it choose an actual value that appears in the input set of values more or less at random.
+For instance, if we see an `M` in the `sex` field in 1978, this could be because only males were capture in this year, because the first value in the set of `sex` values was `M`, or for entirely different reason.
+
+**It's very important for you to know that this is non-standard behavior and will not work in all database management systems.**
+If you use PostgreSQL, for instance, you will get an error.
+PostgreSQL will not process this query, it will give you an error to the effect that the `sex` column is not included in an aggregation function nor in a `GROUP BY` clause.
+**Personally, I like getting this error message because, in such a case, I have done something wrong. It's meaningless to interpret a non-aggregated column like `sex` when other columns have been aggregated.**
+
+    SELECT species_id, year, sex, avg(weight)
+      FROM surveys
+     WHERE species_id = 'OT'
+     GROUP BY year;
+
+### Filtering on Aggregates
+
+**We've seen how we can use a `WHERE` clause to filter records based on some criteria.**
+**What if we wanted to filter aggregated records?**
+For instance, we might want to find those species that appear in the surveys more than 10 times.
+
+    SELECT species_id, count(species_id) AS total
+      FROM surveys
+     WHERE total > 10
+     GROUP BY species_id;
+
+**Why doesn't this work?**
+Recall the order of database operations.
+
+**We need to introduce the `HAVING` clause for this kind of aggregation.**
+
+    SELECT species_id, count(species_id) AS total
+      FROM surveys
+     GROUP BY species_id
+    HAVING total > 10;
+
+We can, however, use the `ORDER BY` clause in the same way we've been using it.
+
+    SELECT species_id, count(species_id) AS total
+      FROM surveys
+     GROUP BY species_id
+    HAVING total > 10
+     ORDER BY total DESC;
+
+### Challenge: Filtering on Aggregates
+
+Write a query that returns, from the `species` table, the number of genera (`genus`) in each `taxa`, only for the `taxa` with more than 10 genera.
+
+## Saving Queries
+
+We've learned how to do some interesting analyses inside our database.
+It's not uncommon that we would want to run the same analysis more than once, for monitoring or reporting purposes, as two examples.
+SQL databases come with a powerful tool to help us save our queries for later re-use.
+**Views are a form of query that is saved in the database, and can be used to look at, filter, and even update information.**
+We can think of Views as Tables; they are also called Table Views.
+We can read, aggregate, and filter information from several tables using a single View.
+
+For example, let's say we wanted to look at the all the data from the northern hemisphere's summer of 2000.
+
+    SELECT *
+      FROM surveys
+     WHERE year = 2000 AND (month > 4 AND month < 10);
+
+To save the results of this query as a view:
+
+    CREATE VIEW summer_2000 AS
+    SELECT *
+      FROM surveys
+     WHERE year = 2000 AND (month > 4 AND month < 10);
+
+Now, we can retrieve the results of that query anytime as:
+
+    SELECT * FROM summer_2000;
+
+If we want to get rid of the View, for whatever reason, we can:
+
+    DROP VIEW summer_2000;
+
+## Combining Data
+
+<!--TODO Joins-->
