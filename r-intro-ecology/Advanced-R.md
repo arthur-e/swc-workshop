@@ -20,7 +20,7 @@ This workshop will focus on R as a general purpose programming language and data
 You may want to make sure you have these packages install ahead of time.
 
 ```r
-install.packages(c('plyr', 'dplyr', 'tidyr', 'ggplot2'))
+install.packages(c('dplyr', 'tidyr', 'ggplot2'))
 ```
 
 ## Contents
@@ -410,3 +410,285 @@ with(surveys, table(year, taxa))
 
 The `with` function signals to R that the names of variables like `year` and `taxa` can be found among the columns of the `surveys` data frame.
 Writing our cross-tabulation this way makes it easier to read at a glance.
+
+## Data Frames
+
+**By default, when building or importing a data frame, the columns that contain characters (i.e., text) are coerced (converted) into the factor data type.**
+Depending on what you want to do with the data, you may want to keep these columns as character.
+To do so, `read.csv()` and `read.table()` have an argument called `stringsAsFactors` which can be set to `FALSE`.
+
+```r
+surveys2 <- read.csv('data/ecology.csv',
+  stringsAsFactors = FALSE)
+str(surveys2)
+```
+
+If you want to set this behavior as the new default throughout your script, you can set it in the `options()` function.
+
+```r
+options(stringsAsFactors = FALSE)
+```
+
+If you choose to set any `options()`, make sure you do so at the very top of your R script so that it is easy for others to see that you're deviating from the default behavior of R.
+
+**There are several questions we can answer about our data frames with built-in functions.**
+
+```r
+dim(surveys)
+nrow(surveys)
+ncol(surveys)
+names(surveys)
+rownames(surveys)
+summary(surveys)
+```
+
+Most of these functions are "generic;" that is, they can be used on other types of objects besides `data.frame`.
+
+## Sequences and Indexing
+
+**Recall that in R, the colon character is a special function for creating sequences.**
+
+```r
+1:10
+```
+
+This is a special case of the more general `seq()` function.
+
+```r
+seq(1, 10)
+seq(1, 10, by = 2)
+```
+
+**Integer sequences like these are useful for extracting data from our data frames.**
+Our survey data frame has rows and columns (it has 2 dimensions), if we want to extract some specific data from it, we need to specify the "coordinates" we want from it.
+Row numbers come first, followed by column numbers, **though when we provide only one number it is interpreted as denoting a column.**
+
+```r
+# First column of surveys
+surveys[1]
+
+# First element of first column
+surveys[1, 1]
+
+# First element of fifth column
+surveys[1, 5]
+
+# First three elements of the fifth column
+surveys[1:3, 5]
+
+# Third row
+surveys[3, ]
+
+# Fifth column
+surveys[, 5]
+
+# First six rows
+surveys[1:6, ]
+```
+
+We can also use negative numbers to exclude parts of a data frame.
+
+```r
+# The first column removed
+head(surveys[, -1])
+
+# The second through fourth columns removed
+head(surveys[, -2:-4])
+```
+
+Recall that to subset the data frame's entire columns we can use the column names.
+
+```r
+surveys['year']   # Result is a data frame
+surveys[, 'year'] # Result is a vector
+surveys$year      # Result is a vector
+```
+
+### Challenge
+
+The function `nrow()` on a `data.frame` returns the number of rows. Use it, in conjunction with `seq()` to create a new `data.frame` that includes every 100th row of the `surveys` data frame starting at row 100 (100, 200, 300, ...).
+
+-------------------------------------------------------------------------------
+
+## Checkpoint: Data Structures in R
+
+**Now you should be familiar with the following:**
+
+* The different types of data in R.
+* The different **data structures** that we can use to organize our data in R.
+* How to ask basic questions about the structure and size of our data in R.
+
+-------------------------------------------------------------------------------
+
+## Subsetting and Aggregating Data
+
+The `surveys` data frame we're using today contains the same data from our SQL lesson yesterday.
+We'll learn how to use R's advanced data manipulation and aggregation features to answer a few questions about these data.
+
+1. What was the median weight of each rodent species between 1980 and 1990?
+2. What is the range in hindfoot length of each rodent species between 1980 and 1990?
+
+**To answer these questions, we'll combine relatively simple tasks in R together, progressively building towards a more complex answer.**
+
+### Subsetting Data Frames
+
+We can get closer to the first question by subsetting our data frame.
+Recall the comparison operators in R; we want to find those entries in our data frame where the `taxa` column is equal to `Rodent` and the `year` column is between 1980 and 1990.
+
+```r
+surveys$taxa == 'Rodent'
+```
+
+That's a lot of output!
+In fact, there's one logical value for every row in the data frame.
+This makes sense, we basically performed a calculation on the `taxa` column, comparing every value to 'Rodent'.
+The result is a logical vector with `TRUE` wherever the `taxa` column takes on a value equal to 'Rodent'.
+
+**Thus, when we subset the rows of `surveys` with this logical vector, we obtain only those rows that matched.**
+
+```r
+surveys[surveys$taxa == 'Rodent', 'taxa']
+```
+
+**Question:** Why does the conditional expression go in the first slot inside the brackets, before the comma?
+
+#### Challenge: Subsetting
+
+Similar to the last example, subset the `surveys` data frame to just those entries between from years between 1980 and 1990, inclusive.
+**Bonus:** Combine the condition on `year` with the condition of `taxa`, so that you return just the entries between 1980 and 1990 for rodents.
+
+## Aggregating and Analyzing Data with dplyr
+
+**R packages** are basically sets of additional functions that let you do more stuff.
+The functions we’ve been using so far, like str() or data.frame(), come built into R; packages give you access to more of them.
+Before you use a package for the first time you need to install it on your machine, and then you should import it in every subsequent R session when you need it.
+R packages can be installed using the `install.packages()` function.
+Let's try to install the `dplyr` package, which provides advanced data querying and aggregation.
+
+```r
+install.packages('dplyr')
+```
+
+Now that we've installed the package, we can load it into our current R session with the `library()` function.
+
+```r
+library(dplyr)
+```
+
+### What is dplyr?
+
+The package `dplyr` provides easy tools for the most common data manipulation tasks.
+It is built to work directly with data frames.
+As you might expect, `dplyr` is an improvement on the `plyr` package, which has been in use for some time but can be slow in some use cases.
+`dplyr` addresses this by porting much of the computation to C++.
+An additional feature is the ability to work directly with data stored in an external database.
+The benefits of doing this are that the data can be managed natively in a relational database, queries can be conducted on that database, and only the results of the query returned.
+
+This addresses a common problem with R in that all operations are conducted in memory and thus the amount of data you can work with is limited by available memory.
+The database connections essentially remove that limitation in that you can have a database of many 100s of gigabytes, conduct queries on it directly, and pull back just what you need for analysis in R.
+
+### Selecting and Filtering with dplyr
+
+We're going to learn some of the most common `dplyr` functions: `select()`, `filter()`, `mutate()`, `group_by()`, and `summarize()`.
+
+To select columns from a data frame, use `select()`.
+The first argument to this function is the data frame (`surveys`), and the subsequent arguments are the columns to keep.
+
+```r
+output <- select(gapminder, year, taxa, weight)
+head(output)
+```
+
+To choose rows, use `filter()`.
+
+```r
+filter(gapminder, taxa == 'Rodent')
+```
+
+### Pipes
+
+How can we combining `select()` and `filter()` so as to do both at the same time?
+There are three ways to do this, two of which we've already seen:
+
+- Use intermediate steps; recall how we would save a subset of our data frame as a new, temporary data frame. This can clutter up our workspace with lots of objects.
+- Nested functions; we saw this most recently with the `with()` function. This is handy, but can be difficult to read if too many functions are nested together.
+- Pipes.
+
+The last option, pipes, are a fairly recent addition to R.
+Pipes let you take the output of one function and send it directly to the next, which is useful when you need to do many things to the same data set.
+In R, the pipe operator, %>%, is available in the `magrittr` package, which is installed as part of `dplyr`.
+**Let's get some practice using pipes.**
+
+```r
+surveys %>%
+  filter(taxa == 'Rodent') %>%
+  select(year, weight)
+```
+
+If we want to save the output of this **pipeline,** we can assign it to a new variable.
+
+```r
+rodent.surveys <- surveys %>%
+  filter(taxa == 'Rodent') %>%
+  select(year, weight)
+```
+
+#### Challenge: Pipes
+
+Using pipes, subset the `surveys` data to only the rodents entries between 1980 and 1990, inclusive.
+Show only the `year`, `sex`, and `weight` columns in the final result.
+
+### Mutating Data with dplyr
+
+Frequently you'll want to create new columns based on the values in existing columns, for example to do unit conversions, or find the ratio of values in two columns.
+For this we'll use `mutate()`.
+**For instance, we might want to convert weight in grams to weight in kilograms.**
+
+```r
+surveys %>%
+  mutate(weight.kg = weight / 1000)
+```
+
+Woops.
+This is a lot to look at.
+Luckily, we can pipe the results into the `head()` function.
+
+```r
+surveys %>%
+  mutate(weight.kg = weight / 1000) %>%
+  head()
+
+surveys %>%
+  mutate(weight.kg = weight / 1000) %>%
+  tail()
+```
+
+#### Challenge: One-Step Mutation
+
+Mutate the `surveys` data so that there are two new columns:
+
+1. The ratio of hindfoot length to weight;
+2. The weight in ounces (1 gram is 0.035274 ounces).
+
+### Split-Apply-Combine with dplyr
+
+`dplyr` introduces the **split, apply, combine** workflow to our skill set.
+This workflow allows us to split apart a data frame based on the levels (or unique values) of one or more columns, apply a function to those subgroups, and combine the results together.
+
+**To split apart a data frame, we need to introduce the `group_by()` function, which identifies the groups by which we'll split the data.**
+`group_by()` is often used together with `summarize()`, which collapses each group into a single-row summary of that group.
+`group_by()` takes as argument the column names that contain the categorical variables for which you want to calculate the summary statistics.
+
+```r
+surveys %>%
+  group_by(species) %>%
+  summarize(median(weight))
+```
+
+**Here, we've first split apart the data by `species`, that is, into groups of entries with the same value in the `species` column. Then, we applied a function, the `median()` function, to each part. Finally, we combined together the results of each `median()` function calculation.**
+
+Now, we're really close to answering our first question about the data!
+
+#### Challenge: Split-Apply-Combine
+
+Modify the last example so that it fully answers our first question: What is the median weight of each rodent species between 1980 and 1990?
