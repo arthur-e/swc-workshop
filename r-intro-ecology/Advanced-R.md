@@ -805,6 +805,46 @@ surveys %>%
   head(10)
 ```
 
+### Exporting Data
+
+Now that you have learned how to use `dplyr` to extract the information you need from the raw data, or to summarize your raw data, you may want to export these new datasets to share them with your collaborators or for archival.
+
+Similarly to the `read.csv()` function used to read in CSV into R, there is a `write.csv()` function that generates CSV files from data frames.
+
+```r
+surveys_complete <- surveys %>%
+  filter(species_id != '') %>%
+  filter(!is.na(weight)) %>%
+  filter(!is.na(hindfoot_length)) %>%
+  filter(sex != '')
+```
+
+**Because we are interested in plotting how species abundances have changed through time, we are also going to remove observations for rare species (i.e., that have been observed less than 50 times).**
+We will do this in two steps: first we are going to create a dataset that counts how often each species has been observed, and filter out the rare species; then, we will extract only the observations for these more common species.
+
+```r
+# Extract the most common species_id
+species_counts <- surveys_complete %>%
+  group_by(species_id) %>%
+  tally %>%
+  filter(n >= 50) %>%
+  select(species_id)
+
+# Only keep the most common species
+surveys_complete <- surveys_complete %>%
+ filter(species_id %in% species_counts$species_id)
+```
+
+**We'll follow our data management best practices and keep our raw input data separate from our "cleaned" data.**
+
+```r
+write.csv(surveys_complete,
+  file = 'cleaned_data/surveys_complete.csv',
+  row.names = FALSE)
+```
+
+**To make sure that everyone has the same dataset, check that `surveys_complete` has 30463 rows and 13 columns by typing `dim(surveys_complete)`.**
+
 -------------------------------------------------------------------------------
 
 ## Checkpoint: Data Analysis in R
@@ -822,3 +862,190 @@ surveys %>%
 Next, you'll see how to create plots of your data for checking assumptions, validating the data, and answering data analysis questions.
 
 -------------------------------------------------------------------------------
+
+## Data Visualization in R
+
+*Disclaimer: We will be using the functions in the ggplot2 package. R has powerful built-in plotting capabilities, but for this exercise, we will be using the ggplot2 package, which facilitates the creation of highly-informative plots of structured data.*
+
+`ggplot2` **is a plotting package that makes it simple to create complex plots from data in a dataframe.**
+It uses default settings, which help creating publication quality plots with a minimal amount of settings and tweaking.
+The "gg" in `ggplot2` refers to the "grammar of graphics," which is a design philosophy for how to describe visualizations with computer code.
+
+`ggplot` graphics are built step-by-step by adding new elements; in the `ggplot2` documentation, these elements include what are called "geometric objects," which are things like points, lines, and polygons that correspond to your data.
+**We'll first use `ggplot2` to create a scatter plot of hindfoot length and weight across the surveys.**
+To create this plot with `ggplot2` we need to:
+
+1. Bind the plot to a specific data frame using the `data` argument;
+2. Define aesthetics (`aes`) that map variables in teh data to axes on the plot or to plotting size, shape, color, etc.;
+3. Add geometric objects; the graphical representation of the data in the plot (points, lines, polygons). To add a geometric objector or `geom`, use the `+` operator.
+
+```r
+ggplot(data = surveys_complete)
+```
+
+If this is all we instruct R to do, we see that the "Plots" tab in RStudio has appeared and a background has been rendered but nothing else.
+Basically, `ggplot2` has set up a plotting environment but nothing more.
+
+```r
+ggplot(data = surveys_complete, aes(x = weight, y = hindfoot_length))
+```
+
+After we add the aesthetics, we can see that the `x` and `y` axes have been set up with the appropriate ranges and drawn on the plot along with a grid that defines the coordinate space they span.
+
+```r
+ggplot(data = surveys_complete, aes(x = weight, y = hindfoot_length)) +
+  geom_point()
+```
+
+After adding a point layer, we can see the data plotted.
+
+The `+` in the `ggplot2` package is particularly useful because it allows us to modify existing `ggplot` objects.
+**This means we can easily set up plot "templates" and conveniently explore different types of plots,** so the above plot can also be generated with code like this:
+
+```r
+base <- ggplot(data = surveys_complete, aes(x = weight, y = hindfoot_length))
+
+base + geom_point()
+```
+
+Some things to note:
+
+- Anything you put in the `ggplot()` function can be seen by any `geom` layers that you add. i.e. these are universal plot settings. This includes the `x` and `y` axis you set up in `aes()`.
+- You can also specify aesthetics for a given geom independently of the aesthetics defined globally in the `ggplot()` function.
+
+```r
+ggplot(data = surveys_complete) +
+ geom_point(aes(x = weight, y = hindfoot_length))
+```
+
+### Building Plots Iteratively
+
+Building plots with `ggplot2` is typically an iterative process.
+We start by defining the dataset we'll use, lay the axes, and choose a geometric object.
+
+```r
+ggplot(data = surveys_complete, aes(x = weight, y = hindfoot_length)) +
+  geom_point()
+```
+
+Then, we start modifying this plot to extract more infromation from it.
+For instance, we can add transparency (alpha) to avoid overplotting.
+
+```r
+ggplot(data = surveys_complete, aes(x = weight, y = hindfoot_length)) +
+  geom_point(alpha = 0.1)
+```
+
+We can also add a color to the point.
+**Note that when these options are set outside of the aesthetics (outside of the `aes()` function), they apply uniformly to all data points, whereas those inside the aesthetics vary with the values in the data.**
+
+```r
+ggplot(data = surveys_complete, aes(x = weight, y = hindfoot_length)) +
+  geom_point(alpha = 0.1, color = 'blue')
+```
+
+**If we want color to vary with the values in our data frame, we need to assign a column of the data frame as the source for those values and then map those values onto an aesthetic within the `aes()` function.**
+For instance, let's let color vary by species_id.
+
+```r
+ggplot(data = surveys_complete, aes(x = weight, y = hindfoot_length)) +
+  geom_point(alpha = 0.1, aes(color = species_id))
+```
+
+### Boxplots
+
+With `ggplot2` we can easily create more sophisticated plots than a scatter plot.
+For instance, let's explore the distribution of hindfoot length across species.
+
+```r
+ggplot(data = surveys_complete,
+  aes(x = species_id, y = hindfoot_length)) +
+  geom_boxplot()
+```
+
+By adding points to the same plot, we can get a better idea of the number of measurements and of their distribution.
+
+```r
+ggplot(data = surveys_complete,
+  aes(x = species_id, y = hindfoot_length)) +
+  geom_boxplot() +
+  geom_jitter(alpha = 0.3, color = 'tomato')
+```
+
+**Notice how the boxplot layer is behind the jitter layer? What do you need to change in the code to put the boxplot in front of the points such that it’s not hidden.**
+
+### Challenge: Violin Plots
+
+**Boxplots are useful summaries, but hide the shape of the distribution.**
+For example, if there is a bimodal distribution, this would not be observed with a boxplot.
+An alternative to the boxplot is the violin plot (sometimes known as a beanplot), where the shape (of the density of points) is drawn.
+
+- **Replace the box plot with a violin plot; see `geom_violin()`**
+
+In many types of data, it is important to consider the scale of the observations. For example, it may be worth changing the scale of the axis to better distribute the observations in the space of the plot. Changing the scale of the axes is done similarly to adding/modifying other components (i.e., by incrementally adding commands).
+
+- Represent weight on the log-10 scale; see `scale_y_log10()`
+
+### Plotting Time Series Data
+
+**Let's calculate number of counts per year for each species.**
+To do that we need to group data first and count records within each group.
+
+```r
+yearly_counts <- surveys_complete %>%
+  group_by(year, species_id) %>%
+  tally()
+```
+
+Timelapse data can be visualised as a line plot with years on x axis and counts on y axis.
+
+```r
+ggplot(data = yearly_counts, aes(x = year, y = n)) +
+  geom_line()
+```
+
+**Unfortunately this does not work, because we plot data for all the species together.**
+We need to tell ggplot to draw a line for each species by modifying the aesthetic function to include `group = species_id`.
+
+```r
+ggplot(data = yearly_counts, aes(x = year, y = n, group = species_id)) +
+    geom_line()
+```
+
+We will be able to distinguish species in the plot if we add colors.
+
+```r
+ggplot(data = yearly_counts, aes(x = year, y = n, group = species_id, colour = species_id)) +
+  geom_line()
+```
+
+### Faceting
+
+**ggplot has a special technique called faceting that allows to split one plot into multiple plots based on a factor included in the dataset.**
+We will use it to make one plot for a time series for each species.
+
+```r
+ggplot(data = yearly_counts,
+  aes(x = year, y = n,
+    group = species_id, colour = species_id)) +
+  geom_line() +
+  facet_wrap(~ species_id)
+```
+
+Now we would like to split line in each plot by sex of each individual measured. To do that we need to make counts in data frame grouped by `year`, `species_id`, and `sex`.
+
+```r
+yearly_sex_counts <- surveys_complete %>%
+  group_by(year, species_id, sex) %>%
+  tally()
+```
+
+We can now make the faceted plot splitting further by `sex`.
+
+```r
+ggplot(data = yearly_sex_counts,
+  aes(x = year, y = n,
+    color = species_id, group = sex)) +
+geom_line() +
+facet_wrap(~ species_id)
+```
