@@ -526,7 +526,7 @@ The `surveys` data frame we're using today contains the same data from our SQL l
 We'll learn how to use R's advanced data manipulation and aggregation features to answer a few questions about these data.
 
 1. What was the median weight of each rodent species between 1980 and 1990?
-2. What is the range in hindfoot length of each rodent species between 1980 and 1990?
+2. What is the difference in median hindfoot length in each rodent species between 1980 and 2000?
 
 **To answer these questions, we'll combine relatively simple tasks in R together, progressively building towards a more complex answer.**
 
@@ -681,7 +681,7 @@ This workflow allows us to split apart a data frame based on the levels (or uniq
 
 ```r
 surveys %>%
-  group_by(species) %>%
+  group_by(species_id) %>%
   summarize(median(weight))
 ```
 
@@ -692,3 +692,133 @@ Now, we're really close to answering our first question about the data!
 #### Challenge: Split-Apply-Combine
 
 Modify the last example so that it fully answers our first question: What is the median weight of each rodent species between 1980 and 1990?
+**Bonus:** Remove the `NA` values before summarizing.
+
+### More on dplyr
+
+**When we use the `summarize()` function in `dplyr`, we can see that the output appears truncated; instead of running off the screen, we get just the first few rows and a count of how many remain to be seen.**
+That's because `dplyr`, instead of a `data.frame`, has returned an instance of the `tbl_df` class.
+This is a data structure that's very similar to a data frame; for our purposes the only difference is that it won't automatically show too many rows.
+It also displays the data type for each column under its name.
+If you want to display more data on the screen, you can add the `print()` function at the end with the argument `n` specifying the number of rows to display.
+
+```r
+surveys %>%
+  filter(taxa == 'Rodent') %>%
+  filter(year %in% seq.int(1980, 1990)) %>%
+  filter(!is.na(weight)) %>%
+  group_by(species_id) %>%
+  summarize(med.weight = median(weight)) %>%
+  print(n = 15)
+```
+
+We can perform tabulation using the `tally()` function.
+For instance, how many rodents of each species were caught between 1980 and 1990?
+
+```r
+surveys %>%
+  filter(taxa == 'Rodent') %>%
+  filter(year %in% seq.int(1980, 1990)) %>%
+  group_by(species_id) %>%
+  tally()
+```
+
+We can even bring some base R functions into our pipeline.
+For instance, we can visualize the count of rodents caught in the surveys over time.
+
+```r
+surveys %>%
+  filter(taxa == 'Rodent') %>%
+  group_by(year) %>%
+  tally() %>%
+  plot(type = 'l', ylab = 'Rodent Count')
+```
+
+## Cleaning Data with tidyr
+
+The second question we asked about the `surveys` data related to how the total number of rodents caught in each species had changed from 1980 to 2000.
+**This is going to be harder to answer than our previous questions because of how our data are structured.**
+The `tidyr` package in R has some additional functions for data cleaning and restructuring that can be combined with the pipelines we introduced in `dplyr`.
+
+```r
+install.packages('tidyr')
+```
+
+**Following best practices, we'll build this analysis by starting with small parts that we understand.**
+First, we know we're interested in rodents.
+
+```r
+surveys %>%
+  filter(taxa == 'Rodent') %>%
+  head()
+```
+
+Next, we want to calculate how many were caught in each species in each year.
+
+```r
+surveys %>%
+  filter(taxa == 'Rodent') %>%
+  group_by(year, species_id) %>%
+  tally() %>%
+  head()
+```
+
+**If we break out the count for each year into its own columns, we can then simply use mutate to subtract the count in 1980 from the median hindfoot length in 2000.**
+This is what the `spread()` function does in the `tidyr` package.
+
+```r
+surveys %>%
+  filter(taxa == 'Rodent') %>%
+  group_by(year, species_id) %>%
+  tally() %>%
+  spread(year, n, sep = '.') %>%
+  head()
+```
+
+**It's important to note that the only reason this works here is because the intermediate tibble had only three (3) columns: `year`, `species_id`, and the count (`n`).**
+We took the count and broke it out into its own column for each year, which leaves one unique field along the "left" side of our tibble.
+Now we're ready to calculate the difference between the two years.
+
+```r
+surveys %>%
+  filter(taxa == 'Rodent') %>%
+  group_by(year, species_id) %>%
+  tally() %>%
+  spread(year, n, sep = '.') %>%
+  mutate(delta_count = year.2000 - year.1980) %>%
+  select(species_id, delta_count) %>%
+  print(n = 29)
+```
+
+We can use the `arrange()` function to sort the output by a particular field.
+In this case, we want to look at those species with the greatest reduction in individuals caught at the top.
+
+```r
+surveys %>%
+  filter(taxa == 'Rodent') %>%
+  group_by(year, species_id) %>%
+  tally() %>%
+  spread(year, n, sep = '.') %>%
+  mutate(delta_count = year.2000 - year.1980) %>%
+  select(species_id, delta_count) %>%
+  arrange(delta_count) %>%
+  head(10)
+```
+
+-------------------------------------------------------------------------------
+
+## Checkpoint: Data Analysis in R
+
+**Now you should be familiar with the following:**
+
+* How to read in a CSV as an R `data.frame`
+* Factors and when to use them
+* Tabulation and cross-tabulation for checking assumptions about your data
+* Numeric sequences for indexing vectors and data frames
+* Subsetting data frames
+* The split-apply-combine workflow
+* How to use `dplyr` and pipes in a data analysis workflow
+
+Next, you'll see how to create plots of your data for checking assumptions, validating the data, and answering data analysis questions.
+
+-------------------------------------------------------------------------------
