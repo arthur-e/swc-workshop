@@ -560,7 +560,7 @@ Similar to the last example, subset the `surveys` data frame to just those entri
 ## Aggregating and Analyzing Data with dplyr
 
 **R packages** are basically sets of additional functions that let you do more stuff.
-The functions we’ve been using so far, like str() or data.frame(), come built into R; packages give you access to more of them.
+The functions we've been using so far, like str() or data.frame(), come built into R; packages give you access to more of them.
 Before you use a package for the first time you need to install it on your machine, and then you should import it in every subsequent R session when you need it.
 R packages can be installed using the `install.packages()` function.
 Let's try to install the `dplyr` package, which provides advanced data querying and aggregation.
@@ -972,7 +972,7 @@ ggplot(data = surveys_complete,
   geom_jitter(alpha = 0.3, color = 'tomato')
 ```
 
-**Notice how the boxplot layer is behind the jitter layer? What do you need to change in the code to put the boxplot in front of the points such that it’s not hidden.**
+**Notice how the boxplot layer is behind the jitter layer? What do you need to change in the code to put the boxplot in front of the points such that it's not hidden.**
 
 ### Challenge: Violin Plots
 
@@ -1049,3 +1049,76 @@ ggplot(data = yearly_sex_counts,
 geom_line() +
 facet_wrap(~ species_id)
 ```
+
+We might think it is easier to read this plots on a white background.
+It's easy to change the theming elements of a plot in ggplot2.
+
+```r
+ggplot(data = yearly_sex_counts,
+  aes(x = year, y = n,
+    color = species_id, group = sex)) +
+geom_line() +
+facet_wrap(~ species_id) +
+theme_bw()
+```
+
+To make the plot easier to read, we can color by `sex` instead of by `species_id` (species are already in separate plots, so we don't need to distinguish them further).
+
+```r
+ggplot(data = yearly_sex_counts,
+  aes(x = year, y = n, color = sex, group = sex)) +
+geom_line() +
+facet_wrap(~ species_id) +
+theme_bw()
+```
+
+### Customization
+
+Now, let's change names of axes to something more informative than 'year' and 'n' and add a title to this figure:
+
+```r
+ggplot(data = yearly_sex_counts,
+  aes(x = year, y = n, color = sex, group = sex)) +
+geom_line() +
+facet_wrap(~ species_id) +
+labs(title = 'Observed species in time',
+  x = 'Year of observation',
+  y = 'Number of species') +
+theme_bw()
+```
+
+## Applications
+
+### Batch Plot Creation
+
+```r
+# Quantize remaining variables
+variables <- c('weight', 'hindfoot_length')
+
+labels <- c(
+  'weight' = 'Weight (grams)',
+  'hindfoot_length' = 'Hindfoot Length (mm)')
+
+plot.histogram <- function (var) {
+  hist(surveys[,var], main = paste('Histogram of', labels[var]),
+    xlab = labels[var])
+}
+
+for (variable in variables) {
+  png(file=paste0('~/Desktop/histogram_', variable, '.png'), width=670, height=655)
+  plot.histogram(variable)
+  dev.off()
+}
+```
+
+## Conclusion and Summary
+
+### Other Resources
+
+* [Quick-R](http://www.statmethods.net/): "An easily accessible reference...for both current R users, and experienced users of other statistical packages...who would like to transition to R."
+* [RStudio Cheat Sheets](https://www.rstudio.com/resources/cheatsheets/): A list of informational graphics that help remind you how to use some advanced features in RStudio.
+* [The R Inferno](http://www.burns-stat.com/pages/Tutor/R_inferno.pdf): A humorous and informative guide to some of the more advanced features and confounding behavior.
+* [Writing (Fast) Loops in R](http://faculty.washington.edu/kenrice/sisg/SISG-08-05.pdf)
+* [dplyr Cheat Sheet](http://www.rstudio.com/wp-content/uploads/2015/02/data-wrangling-cheatsheet.pdf)
+* A longer introduction to `plyr` and `dplyr` [using the same Gapminder data](http://stat545.com/block009_dplyr-intro.html).
+* More on using `dplyr` [to analyze the Gapminder data](http://stat545.com/block010_dplyr-end-single-table.html).
