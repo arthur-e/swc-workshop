@@ -25,7 +25,23 @@ install.packages(c('dplyr', 'tidyr', 'ggplot2'))
 
 ## Contents
 
-<!--TODO-->
+1. Introduction to RStudio
+2. Review of R
+3. Project Management with RStudio
+4. Starting with Data Structures
+5. Factors and Cross Tabulation
+6. Data Frames
+7. Sequences and Indexing
+8. Subsetting and Aggregating Data
+9. Analyzing Data with dplyr
+  - Pipes
+  - Mutating Data
+  - Split-Apply-Combine Workflow
+10. Cleaning Data with tidyr
+11. Data Visualization in R with ggplot2
+  - Building Plots Iteratively
+  - Faceting for Subplots
+  - Customization and Themes
 
 ## Introduction to RStudio
 
@@ -59,7 +75,7 @@ To execute commands from the file pane in R, use the **Run** button at the top r
 
 ![How to execute commands from the file pane in R.](./RStudio_run.png)
 
-## Quick Overview of R
+## Review of R
 
 Let's quickly review programming in R so everyone's on the same page before we dive into more advanced topics.
 
@@ -557,7 +573,7 @@ surveys[surveys$taxa == 'Rodent', 'taxa']
 Similar to the last example, subset the `surveys` data frame to just those entries between from years between 1980 and 1990, inclusive.
 **Bonus:** Combine the condition on `year` with the condition of `taxa`, so that you return just the entries between 1980 and 1990 for rodents.
 
-## Aggregating and Analyzing Data with dplyr
+## Analyzing Data with dplyr
 
 **R packages** are basically sets of additional functions that let you do more stuff.
 The functions we've been using so far, like str() or data.frame(), come built into R; packages give you access to more of them.
