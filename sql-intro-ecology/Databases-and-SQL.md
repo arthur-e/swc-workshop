@@ -449,4 +449,164 @@ If we want to get rid of the View, for whatever reason, we can:
 
 ## Combining Data
 
-<!--TODO Joins-->
+**Take a look at your handout.**
+What are some of the disadvantages of the "combined" format?
+
+- We have redundant information in the table; a given `genus` will always have the same `taxa` and, generally, a given `species` will have the same `genus` and `taxa`. For large tables, this could require a lot more disk space
+- Moreover, if we realize that the `plot_type` of a group of surveys on a particular date is wrong, we have to change multiple records in the database. What's worse, we may have to guess which records to change, since other plot types may have been used on that same date.
+- Let's say `record_id` 4 was the only record with a Rodent Exclosure. If there was something wrong with the record other than the `plot_type` and we decided to delete it, then the fact that we had ever used a Rodent Exclosure, or that Rodent Exclosure was a valid `plot_type`, is also gone from our database; that is, we lose more information than just the measurement itself.
+
+**Relational layouts solve these problems. Take a look at the relational layout on the backside of your handout.**
+One apparent disadvantage of a relational layout is that sometimes we will want to see information from multiple tables displayed together.
+
+To combine data from two or more tables, relational databases like SQLite  use a `JOIN` clause, which comes after the `FROM` clause.
+We also need to tell the database management system which columns provide the link between the two tables using the word `ON`.
+
+    SELECT *
+      FROM surveys
+      JOIN species
+        ON surveys.species_id = species.species_id
+     LIMIT 5;
+
+`ON` is like `WHERE`; it filters things out according to a test condition.
+We use the `table.colname` format to distinguish the columns in each table.
+
+    SELECT species.genus, species.species, surveys.sex
+      FROM surveys
+      JOIN species
+        ON surveys.species_id = species.species_id
+     LIMIT 5;
+
+**With this join, every value of the `species_id` field from one table is compared to every value in the `species_id` field of the other table. Only those records where the value matches are returned.**
+This is called a "many-to-many" mapping.
+Because there is only 1 record in the `species` table for each unique value of `species_id`, the result of joining this table to `surveys` is a table with the same number of rows as the `surveys` table (35,549 rows).
+If there were 2 records in the `species` table for each `species_id` in the `surveys` table, we'd have twice as many rows.
+
+### Challenge: Joins and Aggregation
+
+Write a query that returns the genus, the average weight, and the average hindfoot length for every genus.
+
+### Aggregation and the Order of Operations
+
+Let's examine the answer to the challenge question above.
+
+    SELECT species.genus, avg(surveys.weight), avg(surveys.hindfoot_length)
+      FROM surveys
+      JOIN species
+        ON surveys.species_id = species.species_id
+     GROUP BY species.genus;
+
+**It's important that we understand how this query is processed by the database.**
+We know that the `WHERE` clause is one of the first things the database manager evaluates.
+However, we've included a `JOIN` statement here.
+**Are we able to filter on joined columns?**
+Let's modify the previous query so that we're aggregating across genera for a single taxa.
+
+    SELECT species.genus, avg(surveys.weight), avg(surveys.hindfoot_length)
+      FROM surveys
+      JOIN species
+        ON surveys.species_id = species.species_id
+     WHERE species.taxa = 'Rodent'
+     GROUP BY species.genus;
+
+Since this worked, we can conclude that the database manager evaluates the `JOIN` before it evaluates the `WHERE` clause.
+Thus, the order of operations in this query is:
+
+- `JOIN` the tables together `ON` the matching columns;
+- Filter entries according to the `WHERE` condition;
+- `SELECT` the specified columns `FROM` the table and its joined tables;
+- Finally, `GROUP` the results `BY` the unique values of a specified column.
+
+### Different Kinds of Joins
+
+There are multiple ways of joining two (or more) tables together with `JOIN`.
+[See this graphic](https://commons.wikimedia.org/wiki/File:SQL_Joins.svg) for an illustration of what's possible with SQL `JOIN`.
+
+### Aliases
+
+**As queries get more complex, table and column names can get long and unwieldy. Just as we saw with column names, we can use aliases to assign new names to tables.**
+
+We can alias table names, as in this example.
+
+    SELECT s.species_id, pl.plot_type
+      FROM surveys AS s
+      JOIN plots AS pl
+        ON s.plot_id = pl.plot_id
+     LIMIT 5;
+
+## Connecting to SQL in R
+
+```r
+install.packages('RSQLite')
+```
+
+**Because the database manager provides all sorts of services for managing and protecting the integrity of our data, we don't open the database like a regular file. Instead, we open a connection to the database and use this connection to issue commands to the database manager.**
+
+```r
+library(RSQLite)
+conn <- dbConnect(SQLite(), dbname='/Users/arthur/Desktop/survey.sqlite')
+```
+
+I've specified the file path to the SQLite database on my machine.
+It may be different on your machine.
+On Windows machines, the path to your Desktop may be:
+
+```
+C:\Users\<username>\Desktop
+```
+
+**Now, `conn` is a variable in R that represents our connection to the database.**
+First, let's take a look at what tables are available in this database.
+
+```r
+tables <- dbListTables(conn)
+tables
+```
+
+Note that the result is an R character vector.
+
+```r
+class(tables)
+```
+
+Now, we can issue SQL commands to the database from the R environment.
+The advantage of doing this in R is that, just like in the last example, the results of our queries will be in the form of R data types.
+We can then take everything we've learned about data analysis in R and apply it to the data stored in our database.
+
+```r
+species <- dbGetQuery(conn, 'SELECT * FROM species')
+head(species)
+```
+
+**Note that the result of our query is, specifically, a `data.frame`.**
+
+```r
+class(species)
+```
+
+Let's make another query.
+When we have a data frame in R we can get quick summary statistics with the `summary()` function.
+
+```r
+surveys <- dbGetQuery(conn, 'SELECT * FROM surveys')
+summary(surveys)
+```
+
+### Disconnecting from the Database
+
+It's important to realize that the data frame representation of our SQL table is just a copy of the data from the database.
+We can safely make any changes we want to the data frame without affecting our data in the database.
+Moreover, once we have pulled our data from the database and have no need for running further queries, we should close our connection to the database.
+We should do this before running any analysis on our data.
+
+```r
+dbDisconnect(conn)
+rm(conn)
+```
+
+## Conclusion and Summary
+
+### Other Resources
+
+* On correct aggregation: [Do you use GROUP BY correctly?](https://www.psce.com/blog/2012/05/15/mysql-mistakes-do-you-use-group-by-correctly/)
+* The best book on SQL is [SQL: Visual Quickstart Guide (by Chris Fehily, 3rd Edition)](http://www.fehily.com/books/sql_vqs_3.html)

@@ -462,7 +462,7 @@ SELECT countries.continent, surveys.country, surveys.lifeExp
 
 **With this join, every value of the `country` field from one table is compared to every value in the `country` field of the other table. Only those records where the value matches are returned.**
 This is called a "many-to-many" mapping.
-Because there is only 1 record the `countries` table for each unique value of `country`, the result of joining this table to `surveys` is a table with the same number of rows as the `surveys` table (1704 rows).
+Because there is only 1 record in the `countries` table for each unique value of `country`, the result of joining this table to `surveys` is a table with the same number of rows as the `surveys` table (1704 rows).
 If there were 2 records in `countries` for each country, we'd have twice as many rows (2 times 1704 equals 3408).
 
 #### Challenge: Joins and Aggregation
