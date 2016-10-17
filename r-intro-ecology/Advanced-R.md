@@ -20,7 +20,7 @@ This workshop will focus on R as a general purpose programming language and data
 You may want to make sure you have these packages install ahead of time.
 
 ```r
-install.packages(c('dplyr', 'tidyr', 'ggplot2'))
+install.packages(c('RSQLite', 'dplyr', 'tidyr', 'ggplot2'))
 ```
 
 ## Contents
@@ -245,6 +245,31 @@ There is no single right way to organize a project but there are important best 
 Using RStudio's project management pane at the lower-right, create a new folder called `data` inside your project folder.
 **Then, copy the `ecology.csv` file to the new `data` directory.**
 
+## Connecting to SQLite
+
+```r
+library(RSQLite)
+
+conn <- dbConnect(SQLite(), dbname='survey.sqlite')
+
+tables <- dbListTables(conn)
+tables
+
+class(tables)
+
+surveys <- dbGetQuery(conn, 'SELECT * FROM species')
+head(species)
+
+surveys <- dbGetQuery(conn, 'SELECT * FROM surveys')
+summary(surveys)
+
+surveys <- dbGetQuery(conn, 'SELECT * FROM surveys JOIN species ON surveys.species_id = species.species_id JOIN plots ON surveys.plot_id = plots.plot_id')
+summary(surveys)
+
+dbDisconnect(conn)
+rm(conn)
+```
+
 ## Starting with Data Structures
 
 Let's load in some data.
@@ -320,10 +345,9 @@ class(surveys[,4]) # Returns a numeric vector
 Based on the output of the `str()` function, answer the following questions.
 
 1. How many rows and columns are there in the data frame?
-2. How many countries have been recorded in this data frame?
-3. How many continents have been recorded in this data frame?
+2. How many species have been recorded in this data frame?
 
-As you can see, many of the columns consist of integers, however, the columns `country` and `continent` are of a special class called `factor`.
+As you can see, many of the columns consist of integers, however, the columns `species_id` and `sex` are of a special class called `factor`.
 Before we learn more about the `data.frame` class, let's talk about factors.
 
 ## Factors

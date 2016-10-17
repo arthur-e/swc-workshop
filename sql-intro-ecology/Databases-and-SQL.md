@@ -57,8 +57,8 @@ Let's write a query to find out which species are represented in the survey data
 **What happened? Let's go to the whiteboard for this.**
 
 - The word `SELECT` here is the most common command we see in SQL. It tells the database manager we want to retrieve some rows.
-- The word `FROM` tells the database manager which table we want to retrieve those rows from. It's followed by the name of that table, which here is `surveys`.
-- The words `genus` and `species` are the names of two of the columns in the `surveys` table. Column names follow the `SELECT` statement, indicating that those are the only columns we want to see in the output.
+- The word `FROM` tells the database manager which table we want to retrieve those rows from. It's followed by the name of that table, which here is `species`.
+- The words `genus` and `species` are the names of two of the columns in the `species` table. Column names follow the `SELECT` statement, indicating that those are the only columns we want to see in the output.
 - The words `SELECT` and `FROM` are capitalized here by convention; it's not required to capitalize them but it helps make your code more readable which is very important.
 
 **Throughout today's lesson I will be typing SQL commands in all capitals and the names of columns in lowercase to help you distinguish them from the names of tables and columns in the data. I encourage you to try to do the same but you can type these commands however you want; they'll work just the same.**

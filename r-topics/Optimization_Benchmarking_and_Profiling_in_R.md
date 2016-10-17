@@ -9,7 +9,8 @@ There are two areas in particular where less experienced R users end up writing 
 **Before we can demonstrate more efficient ways of completing these tasks, we need to develop a way to measure how efficient our R code is.**
 
 ```r
-install.packages(c('microbenchmark', 'lineprof'))
+install.packages('microbenchmark')
+install.packages('lineprof')
 ```
 
 ## Benchmarking
