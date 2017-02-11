@@ -452,7 +452,7 @@ If we want to get rid of the View, for whatever reason, we can:
 **Take a look at your handout.**
 What are some of the disadvantages of the "combined" format?
 
-- We have redundant information in the table; a given `genus` will always have the same `taxa` and, generally, a given `species` will have the same `genus` and `taxa`. For large tables, this could require a lot more disk space
+- We have redundant information in the table; a given `genus` will always have the same `taxa` and, generally, a given `species` will have the same `genus` and `taxa`. For large tables, this could require a lot more disk space.
 - Moreover, if we realize that the `plot_type` of a group of surveys on a particular date is wrong, we have to change multiple records in the database. What's worse, we may have to guess which records to change, since other plot types may have been used on that same date.
 - Let's say `record_id` 4 was the only record with a Rodent Exclosure. If there was something wrong with the record other than the `plot_type` and we decided to delete it, then the fact that we had ever used a Rodent Exclosure, or that Rodent Exclosure was a valid `plot_type`, is also gone from our database; that is, we lose more information than just the measurement itself.
 
@@ -514,7 +514,7 @@ Thus, the order of operations in this query is:
 
 - `JOIN` the tables together `ON` the matching columns;
 - Filter entries according to the `WHERE` condition;
-- `SELECT` the specified columns `FROM` the table and its joined tables;
+- `SELECT` the specified columns in the table and its joined tables;
 - Finally, `GROUP` the results `BY` the unique values of a specified column.
 
 ### Different Kinds of Joins
