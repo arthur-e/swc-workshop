@@ -1,3 +1,4 @@
 syntax: glob
+*/.ipynb_checkpoints/*
 unix-shell/workshop
 r-intro-gapminder/scratch
