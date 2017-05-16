@@ -434,7 +434,7 @@ Looking more closely, this query:
 
 ## Combining Data
 
-*Revisit the wide format versus narrow format tables.*
+*Revisit the wide format versus long format tables.*
 
 ![](.sql-join-structure.svg)
 
@@ -447,7 +447,10 @@ However, our latitudes and longitudes are in the `Site` table, while the dates o
 **We need to combine these tables somehow. The SQL command to do this is `JOIN`.**
 To see how it works, let's start by joining the `Site` and `Visited` tables:
 
-    sqlite> SELECT * FROM Site JOIN Visited;
+```sql
+SELECT * FROM Site
+  JOIN Visited;
+```
 
 `JOIN` creates the cross product of two tables, i.e., **it joins each record of one table with each record of the other table to give all possible combinations.**
 Since there are three records in `Site` and eight in `Visited`, the join's output has 24 records (3 times 8 equals 24).
@@ -457,7 +460,13 @@ And since each table has three fields, the output has six fields (3 plus 3 equal
 It has no way of knowing whether they do or not until we tell it how.
 To do that, we add a clause specifying that we're only interested in combinations that have the same site name, thus we need to use a filter:
 
-    sqlite> SELECT * FROM Site JOIN Visited ON Site.name=Visited.site;
+```sql
+SELECT *
+  FROM Site
+  JOIN Visited ON Site.name = Visited.site;
+```
+
+**See [this image for a visual explanation](https://blog.codinghorror.com/content/images/uploads/2007/10/6a0120a85dcdae970b012877702708970c-pi.png)** of this join.
 
 **Once we add this to our query, the database manager only returns records that combined information where the site ID is the same, leaving us with just the ones we want.**
 `ON` is very similar to `WHERE` and for all the queries in this particular lesson you can use them interchangeably.
@@ -466,18 +475,23 @@ This is not true in general, however.
 **Notice that we used `Table.field` to specify field names in the output of the join.**
 We do this because tables can have fields with the same name, and we need to be specific which ones we're talking about.
 For example, if we joined the `Person` and `Visited` tables, the result would inherit a field called `id` from each of the original tables.
-**We can now use the same dotted notation to select the three columns we actually want out of our join:**
+We can now use the same dotted notation to select the three columns we actually want out of our join:
 
-    SELECT Site.lat, Site.long, Visited.dated
-      FROM Site JOIN Visited ON Site.name=Visited.site;
+```sql
+SELECT Site.lat, Site.long, Visited.dated
+  FROM Site
+  JOIN Visited ON Site.name = Visited.site;
+```
 
 **We can `JOIN` as many different tables as we like.**
 
-    SELECT Site.lat, Site.long, Visited.dated, Survey.quant, Survey.reading
-      FROM Site
-      JOIN Visited ON Site.name=Visited.site
-      JOIN Survey ON Visited.id=Survey.taken
-     WHERE Visited.dated IS NOT NULL;
+```sql
+SELECT Site.lat, Site.long, Visited.dated, Survey.quant, Survey.reading
+  FROM Site
+  JOIN Visited ON Site.name = Visited.site
+  JOIN Survey ON Visited.id = Survey.taken
+ WHERE Visited.dated IS NOT NULL;
+```
 
 **We can tell which records from `Site`, `Visited`, and `Survey` correspond with each other because those tables contain primary keys and foreign keys.**
 A primary key is a value, or combination of values, that uniquely identifies each record in a table.
@@ -492,7 +506,19 @@ This is actually very common: those IDs have names like "student numbers" and "p
 
 **Challenge: Write a query that lists all radiation readings from the DR-1 site.**
 
-    SELECT Survey.quant, Survey.reading, Visited.site
-      FROM Survey
-      JOIN Visited ON Survey.taken=Visited.id
-     WHERE Visited.site='DR-1' AND Survey.quant='rad';
+```sql
+SELECT Survey.quant, Survey.reading, Visited.site
+  FROM Survey
+  JOIN Visited ON Survey.taken = Visited.id
+ WHERE Visited.site = 'DR-1' AND Survey.quant = 'rad';
+```
+
+### Types of Joins
+
+In this lesson, we've been using **inner joins,** which are the default join for most database managers.
+There are other ways of joining two tables based on two columns with similar entries.
+[Check this page out with its visual explanations of joins.](https://blog.codinghorror.com/a-visual-explanation-of-sql-joins/)
+
+## Creating a Database
+
+## Programming with Databases in Python
