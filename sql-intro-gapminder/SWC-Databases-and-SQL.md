@@ -1,9 +1,18 @@
 # Databases and SQL
 
+## The Gapminder Data
+
+In this workshop, we will be using a subset of [the Gapminder dataset](http://www.gapminder.org/).
+This is world-wide statistical data collected and curated to allow for a "fact based worldview."
+These data includes things like employment rates, birth rates, death rates, percent of GDP that's from agriculture and more.
+There are currently 519 variables overall, each as a time series.
+
+You can see some examples of Gapminder's visualizations [in this TED video](http://www.ted.com/talks/hans_rosling_shows_the_best_stats_you_ve_ever_seen).
+In this workshop, we'll focus just on **life expectancy at birth** and **per-capita GDP** by country, continent, and total population.
+
 ## Goal and Objectives
 
-We'll again use the Gapminder dataset we saw in the R introduction lesson.
-Now that we're more familiar with this dataset, we might ask some specific questions about the data.
+We want to ask some specific questions about the data.
 
 * What is the average life expectancy since 2000 of each of the top 10 countries ordered by per capita GDP?
 * What is the average life expectancy since 2000 across each continent?
@@ -47,8 +56,8 @@ Here, the database manager reads the user's command, retrieves and manipulates d
 
 * It separates our data from our analysis. Recall how this builds on best practices: treating the data as read-only; treating our results as disposable and generating them from scripts. This way, there is no risk of accidentally changing data when analyzing it.
 * Databases are fast for large amounts of data; much faster than many programming environments including R.
-* We improve the quality control of data entry through the use of data type checking and constraints.
-* Furthermore, the concepts of relation database queries are core to understanding more advanced features in R and high-performance computing environments for working with big datasets.
+* We improve the quality control of data entry through the use of data type checking and constraints. Everyone who reads from the database gets the same information. When the database is updated, everyone has access to those updates immediately.
+* Furthermore, the concepts of relational database queries are core to understanding more advanced features in R and high-performance computing environments for working with big datasets.
 
 ### SQL
 

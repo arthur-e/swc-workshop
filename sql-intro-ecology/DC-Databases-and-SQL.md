@@ -22,6 +22,13 @@ When we are using a database, we send commands (usually called queries) to a dat
 **This is analogous to what we saw with the Unix shell.**
 Here, the database manager reads the user's command, retrieves and manipulates data from the database according to what the user asked for, and returns it for display.
 
+**Why would we use a relational database?**
+
+* It separates our data from our analysis. Recall how this builds on best practices: treating the data as read-only; treating our results as disposable and generating them from scripts. This way, there is no risk of accidentally changing data when analyzing it.
+* Databases are fast for large amounts of data; much faster than many programming environments including R.
+* We improve the quality control of data entry through the use of data type checking and constraints. Everyone who reads from the database gets the same information. When the database is updated, everyone has access to those updates immediately.
+* Furthermore, the concepts of relational database queries are core to understanding more advanced features in R and high-performance computing environments for working with big datasets.
+
 ## The Data
 
 The data we will be using is a time-series for a small mammal community in southern Arizona.
