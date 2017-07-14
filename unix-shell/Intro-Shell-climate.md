@@ -191,3 +191,141 @@ We've seen that the `..` symbol means the "parent of the current working directo
 Notice that in the listing from the last command there is also a `.` symbol in the list.
 What does the `.` symbol stand for?
 **Hint:** Think of a command you've seen that this symbol could be an argument for.
+
+### Relative versus Absolute File Paths
+
+**So far, we've seen three commands for navigating our file system. What do they mean?**
+
+- `pwd`
+- `ls`
+- `cd`
+
+Let's explore these commands further.
+What happens if you type `cd` on its own, without specifying a directory?
+
+```sh
+$ cd
+```
+
+How can you check what happened?
+
+Let's go back to the `data` directory we were in before.
+Last time, we used three commands to ge there.
+Let's string those three file paths together so that we only have to type `cd` once.
+
+```sh
+$ cd Desktop/data-shell/data
+```
+
+**So far, when specifying directory names, we've been using relative paths.**
+A relative path is a file path that is relative to the current working directory.
+That is, when we use a relative path with a command like `ls` or `cd`, the program tries to find that location based on our current location in the file system.
+
+It's also possible to specify an *absolute path* to a directory by specifying its entire path from the root directory, which is indicated by the leading slash.
+Note that absolute paths are what is printed out by the `pwd` program.
+
+```sh
+$ pwd
+$ cd /home/arthur/Desktop/data-shell
+$ cd ~/Desktop/data-shell
+```
+
+## Working with Files and Directories
+
+We now know how to explore files and directories on our file system but how do we create them in the first place?
+
+```sh
+$ ls -F
+```
+
+Let's create a new directory called `thesis` using the command:
+
+```sh
+$ mkdir thesis
+```
+
+As you might have guessed, `mkdir` stands for "make directory."
+Since `thesis` is a relative path, the new directory is created in the current working directory.
+
+```sh
+$ ls -F
+```
+
+**Here are some tips for naming files and folders:**
+
+- Don't use names with spaces; as we've seen, whitespace is used to separate arguments on the command line, which means that if a file or folder has a space in it, the shell doesn't know if we have given it one name or two.
+- Don't begin a name with a dash; as we've seen, dashes indicate options or flags on the command line.
+- Stick with letters, numbers, the dot, and the underscore.
+
+If you need to work with a file that someone else named and it has a space character in it, you should surround the name of the file in double quotes.
+
+**Now, since we've just created the `thesis` directory, there is nothing inside it.**
+
+```sh
+$ ls -F thesis
+```
+
+Let's change our working directory to `thesis` and then start our text editor.
+
+```sh
+$ cd thesis
+$ nano draft.txt
+```
+
+Let's type in a few lines of text; whatever you want.
+
+```
+It's not "publish or perish" anymore,
+it's "share and thrive."
+```
+
+Once we're happy with the contents of our file, we type `Ctrl + O` to save the file, then `Ctrl + X` to exit `nano`.
+
+```sh
+$ ls
+$ cat draft.txt
+```
+
+### Removing Files and Directories
+
+Let's say we've decided our current draft is utter trash.
+
+```sh
+$ rm draft.txt
+```
+
+**Remember that when you use `rm`, the file is gone forever. There is no "Recycle Bin" or "Trash Bin" that you can retrieve the file from when you use this command.**
+
+Let's create a new, empty draft of our thesis to work on later.
+The `touch` command is useful for creating empty files or updating the "last modified" attribute of a file.
+
+```sh
+$ touch draft.txt
+```
+
+But, we changed our mind again and decided to get rid of the entire `thesis` directory.
+
+```sh
+$ cd ..
+$ rm thesis
+```
+
+We get an error when we try to `rm` the `thesis` directory because `rm`, by default, works only on files, not directories.
+**Type this next command very carefully!**
+
+```sh
+$ rm -r thesis
+```
+
+**One must exercise caution when using the `-r` flag with `rm`.**
+The `-r` flag stands for "recursive," meaning that the shell will delete the specified directory and everything inside it along with everything inside the subdirectories of that directory, and so on.
+
+### Renaming, Moving, and Copying Files
+
+Let's recreate the `thesis` directory one final time.
+
+```sh
+$ mkdir thesis
+$ touch thesis/draft.txt
+$ ls thesis
+```
