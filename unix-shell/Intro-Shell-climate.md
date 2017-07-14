@@ -329,3 +329,234 @@ $ mkdir thesis
 $ touch thesis/draft.txt
 $ ls thesis
 ```
+
+Say we decide to change the name of `draft.txt`, since it isn't very informative.
+We can use the `mv` command, which stands for "move" to rename a file:
+
+```sh
+$ mv thesis/draft.txt thesis/20170726_draft.txt
+```
+
+The `YYYYMMDD` date format at the beginning of the filename ensures that, when the shell sorts filenames alphabetically, the drafts will also be in chronological order.
+
+How does `mv` work?
+
+- The first argument to `mv` tells the program what file we want to move;
+- The second argument tells the program where the file should be moved to.
+- If the second argument is a file path that doesn't exist, then `mv` essentially renames the file by putting the file we want to move onto the new file path.
+
+```sh
+$ ls thesis
+```
+
+**Again, we need to be careful when using the `mv` command.**
+If the second argument is a file path that already exists--that is, a file with the new name already exists--then that second file will be overwritten by the first!
+
+The `mv` command can also be used to move a file without changing its name.
+For instance, let's move our new thesis draft into the current working directory.
+This time, the second argument to `mv` is the name of a directory.
+When `mv` sees an existing directory as the second argument, it understands that we want to take the file and put it into this directory.
+
+```sh
+$ mv thesis/20170726_draft.txt .
+$ ls thesis
+$ ls .
+```
+
+(Remember that the dot stands for the current working directory.)
+
+What if we want to copy a file?
+The `cp` command stands for "copy."
+Let's use it to create a backup of our thesis.
+
+```sh
+$ mkdir backup
+$ cp 20170726_draft.txt backup/
+$ ls backup
+```
+
+### Challenge: Renaming Files
+
+Suppose that you created a text file in your current directory to contain a list of the statistical tests you will need to do to analyze your data.
+You accidentally mispelled the filename when you first created it!
+Which of the following commands could you use to correct your mistake?
+
+1. `cp statstics.txt statistics.txt`
+2. `mv statstics.txt statistics.txt`
+3. `mv statstics.txt .`
+4. `cp statstics.txt .`
+
+## Redirection, Pipes, and Filters
+
+Now that we know a few basic commands, we can finally dive into the shell's most powerful feature: the ease with which it lets us combine existing programs in new ways.
+We'll start with a directory called `molecules` that contains six files describing some simple organic molecules.
+The `.pdb` file extension indicates that these files are in Protein Data Bank format, a simple text format that specifies the type and position of each atom in the molecule.
+
+```sh
+$ # Should be in the data-shell directory
+$ ls molecules
+```
+
+Let's go into that directory and try out a new command.
+
+```sh
+$ cd molecules
+$ wc *.pdb
+```
+
+The `wc` command stands for "word count" but it counts lines, words, and characters, in that order.
+
+**The star symbol, `*`, is a wildcard.**
+It matches zero or more characters, so `*.pdb` matches any file that ends with the `.pdb` file extension.
+
+```sh
+$ wc p*.pdb
+```
+
+The `?` character is also a wildcard; it matches only a single character, for instance:
+
+```sh
+$ wc p???ane.pdb
+```
+
+### Challenge: Wildcards
+
+When run in the molecules directory, which `ls` command(s) will produce the following output?
+
+`ethane.pdb methane.pdb`
+
+1. `ls *t*ane.pdb`
+2. `ls *t?ne.*`
+3. `ls *t??ne.pdb`
+4. `ls ethane.*`
+
+### Redirection
+
+If we add the `-l` option to the `wc` command, the output will show only the number of lines.
+
+```sh
+$ wc -l *.pdb
+```
+
+Similarly, we can use the option `-w` or `-c` to get only the number of words or only the number of characters.
+
+**Which of these files is the shortest, in terms of number of lines?**
+Here, it's easy to find the shortest file because we have only six files in total but what if we had hundreds or thousands?
+You wouldn't want to scroll through the output of this command, keeping track of the line counts, until you find the smallest number.
+
+**To answer this question more efficiently for an arbitrary number of files, we'll piece a couple of different shell programs together.**
+To begin with, let's dump the output from that last command into a file.
+
+```sh
+$ wc -l *.pdb > lengths.txt
+```
+
+You'll notice there's no output.
+**The right angle bracket tells the shell to redirect the command's output to a file instead of printing it to the screen.**
+If the file doesn't exist, it will be created.
+If it does exist, it will be overwritten.
+We can use two right arrows to *append* the output to the end of a file, rather than overwriting it.
+
+```sh
+$ cat lengths.txt
+$ cp lengths.txt temp.txt
+$ wc -l *.pdb >> temp.txt
+$ cat temp.txt
+$ rm temp.txt
+```
+
+The `cat` command prints the contents of a file to the screen.
+
+Now, let's use the `sort` command to sort the contents of the file we just created.
+We'll add the `-n` flag to specify that we want to sort numerically instead of alphabetically.
+
+```sh
+$ sort -n lengths.txt
+```
+
+We can put the sorted list of lines in another temporary file called `lengths-sorted.txt`.
+
+```sh
+$ sort -n lengths.txt > lengths-sorted.txt
+```
+
+Now, we can use the `head` command to look at just the first few lines of the `lengths-sorted.txt` file.
+
+```sh
+$ head -n 1 lengths-sorted.txt
+```
+
+Here, the `-n` flag has a different meaning than with `sort`.
+For the `head` program, the `-n` flag indicates the number of lines we want to view, starting from the top of the file.
+**Because `lengths-sorted.txt` contains the lengths of our PDB files in order from least to greatest, the output of `head` must be the file with the fewest lines.**
+
+### Pipes
+
+We've seen how we can use a few basic tools built into the shell to answer some important questions about data.
+However, the process we followed was a little tedious.
+We had to type three different commands and create no fewer than two temporary files to get at our answer.
+Luckily, the shell provides a way for us to arrive at the answer with a little less typing and a lot more clarity.
+
+Note that the previous commands we typed created output that we stored in a file, which then served as input to the next command.
+**In the shell, we can use pipes to "pipe" the output of one command into another.**
+
+```sh
+$ sort -n lengths.txt | head -n 1
+```
+
+The vertical bar, `|`, between the two commands is called a *pipe.*
+It tells the shell that we want to use the output of the command on the left-hand side as input to the command on the right-hand side.
+
+So far, we've combined the last two steps of our process into a single step.
+Any idea on how we can combine this step with the first?
+
+```sh
+$ wc -l *.pdb | sort -n
+$ wc -l *.pdb | sort -n | head -n 1
+```
+
+![](./redirects-and-pipes.png)
+
+**This simple idea is why Unix has been so successful.**
+Instead of creating enormous programs that try to do many different things, Unix programmers focus on creating lots of simple tools that each do one job well, and that work well with each other.
+This programming model is called *"pipes and filters."*
+We've already seen pipes; a *filter* is a program like `wc` or `sort` that transforms a stream of input into a stream of output.
+Almost all of the standard Unix tools can work this way: unless told to do otherwise, they read from standard input, do something with what they've read, and write to standard output.
+
+**Other examples:**
+
+- Counting the number of atoms: `tail -n +3 cubane.pdb | tail -r | tail -n +3 | wc -l`
+
+### Challenge: Removing Duplicate Entries
+
+Let's move to the data directory.
+
+```sh
+$ cd
+$ cd Desktop/data-shell/data
+```
+
+Here, the file `salmon.txt` has a list of types of salmon that were caught.
+The program `uniq` will remove duplicated lines that are adjacent to one another.
+
+```sh
+$ uniq salmon.txt
+```
+
+How can we use the tools we've seen so far to get a unique list of salmon types?
+That is, how can we combine `uniq` with another program so that *all* non-unique lines are removed, not just the adjacent ones?
+
+### Challenge: Counting Entries in a File
+
+The file `data/animals.txt` is a comma-separated variable (CSV) file of animals that were observed on certain dates.
+The following command will extract the second column of this CSV.
+
+```sh
+cut -d , -f 2 data/animals.txt
+```
+
+How can you use the shell to count the number of times `rabbit` appears in this list?
+
+```sh
+cut -d , -f 2 data/animals.txt | grep rabbit | wc -l
+```
