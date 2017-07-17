@@ -389,66 +389,68 @@ Which of the following commands could you use to correct your mistake?
 ## Redirection, Pipes, and Filters
 
 Now that we know a few basic commands, we can finally dive into the shell's most powerful feature: the ease with which it lets us combine existing programs in new ways.
-We'll start with a directory called `molecules` that contains six files describing some simple organic molecules.
-The `.pdb` file extension indicates that these files are in Protein Data Bank format, a simple text format that specifies the type and position of each atom in the molecule.
+To explore this topic, we'll be using a dataset containing the last 24 hours of active wildfires, as of July 17, 2017, in different parts of the globe.
+This dataset was [prepared by NASA](https://earthdata.nasa.gov/earth-observation-data/near-real-time/firms/active-fire-data) using observations from a space-borne satellite sensor named MODIS.
 
 ```sh
-$ # Should be in the data-shell directory
-$ ls molecules
+$ cd
+$ cd Desktop/active-fires
+$ head Alaska.csv
 ```
 
 Let's go into that directory and try out a new command.
 
 ```sh
-$ cd molecules
-$ wc *.pdb
+$ wc *.csv
 ```
 
 The `wc` command stands for "word count" but it counts lines, words, and characters, in that order.
 
 **The star symbol, `*`, is a wildcard.**
-It matches zero or more characters, so `*.pdb` matches any file that ends with the `.pdb` file extension.
+It matches zero or more characters, so `*.csv` matches any file that ends with the `.csv` file extension.
 
 ```sh
-$ wc p*.pdb
+$ wc A*.csv
 ```
 
 The `?` character is also a wildcard; it matches only a single character, for instance:
 
 ```sh
-$ wc p???ane.pdb
+$ wc ??????.csv
 ```
 
 ### Challenge: Wildcards
 
-When run in the molecules directory, which `ls` command(s) will produce the following output?
+When run in the `active-fires` directory, which `ls` command(s) will produce the following output?
 
-`ethane.pdb methane.pdb`
+`South_America.csv South_Asia.csv`
 
-1. `ls *t*ane.pdb`
-2. `ls *t?ne.*`
-3. `ls *t??ne.pdb`
-4. `ls ethane.*`
+1. `ls South_*`
+2. `ls S*_A*.csv`
+3. `ls South*_.csv`
+4. `ls ?????_A*.csv`
 
 ### Redirection
 
+**How many active fires were detected in each region?**
 If we add the `-l` option to the `wc` command, the output will show only the number of lines.
+Subtracting 1 from the number of lines should give us the total number of active fires (because there is one header line in each file).
 
 ```sh
-$ wc -l *.pdb
+$ wc -l *.csv
 ```
 
 Similarly, we can use the option `-w` or `-c` to get only the number of words or only the number of characters.
 
-**Which of these files is the shortest, in terms of number of lines?**
-Here, it's easy to find the shortest file because we have only six files in total but what if we had hundreds or thousands?
+**Which region has the fewest fires? That is, which of these files is the shortest, in terms of number of lines?**
+Here, it's easy to find the shortest file because we have only 12 files in total but what if we had hundreds or thousands?
 You wouldn't want to scroll through the output of this command, keeping track of the line counts, until you find the smallest number.
 
 **To answer this question more efficiently for an arbitrary number of files, we'll piece a couple of different shell programs together.**
 To begin with, let's dump the output from that last command into a file.
 
 ```sh
-$ wc -l *.pdb > lengths.txt
+$ wc -l *.csv > lengths.txt
 ```
 
 You'll notice there's no output.
@@ -460,7 +462,7 @@ We can use two right arrows to *append* the output to the end of a file, rather 
 ```sh
 $ cat lengths.txt
 $ cp lengths.txt temp.txt
-$ wc -l *.pdb >> temp.txt
+$ wc -l *.csv >> temp.txt
 $ cat temp.txt
 $ rm temp.txt
 ```
@@ -488,7 +490,7 @@ $ head -n 1 lengths-sorted.txt
 
 Here, the `-n` flag has a different meaning than with `sort`.
 For the `head` program, the `-n` flag indicates the number of lines we want to view, starting from the top of the file.
-**Because `lengths-sorted.txt` contains the lengths of our PDB files in order from least to greatest, the output of `head` must be the file with the fewest lines.**
+**Because `lengths-sorted.txt` contains the lengths of our data files in order from least to greatest, the output of `head` must be the file with the fewest lines.**
 
 ### Pipes
 
@@ -511,8 +513,8 @@ So far, we've combined the last two steps of our process into a single step.
 Any idea on how we can combine this step with the first?
 
 ```sh
-$ wc -l *.pdb | sort -n
-$ wc -l *.pdb | sort -n | head -n 1
+$ wc -l *.csv | sort -n
+$ wc -l *.csv | sort -n | head -n 1
 ```
 
 ![](./redirects-and-pipes.png)
@@ -542,6 +544,10 @@ $ uniq salmon.txt
 How can we use the tools we've seen so far to get a unique list of salmon types?
 That is, how can we combine `uniq` with another program so that *all* non-unique lines are removed, not just the adjacent ones?
 
+```sh
+$ sort salmon.txt | uniq salmon.txt
+```
+
 ## Loops
 
 We've just seen the primary reason why the Unix shell is so popular: simple, specialist programs that can be connected together with pipes to build up more complex programs.
@@ -551,15 +557,12 @@ If we want to apply these "pipes and filters" to more than a couple of files, ho
 In computer-aided analysis, we typically accomplish the repetition of a task through *loops.*
 Loops not only reduce the amount of typing, they reduce the number of mistakes that we are likely to make.
 
-To explore the power of the shell for repeating tasks, we'll explore a dataset containing the last 24 hours of active wildfires, as of July 17, 2017, in different parts of the globe.
-This dataset was [prepared by NASA](https://earthdata.nasa.gov/earth-observation-data/near-real-time/firms/active-fire-data) using observations from a space-borne satellite sensor named MODIS.
-
 ```sh
 $ cd
 $ cd Desktop/active-fires
 ```
 
-**Let's say, for starters, we want to backup these data files.**
+**Let's say, for starters, we want to backup our active fire data files.**
 We can't do the following:
 
 ```sh
@@ -635,20 +638,217 @@ done
 We'll assume the shell's list of files is in alphabetical order.
 
 ```sh
-cp Alaska.csv original-Alaska.csv
+$ cp Alaska.csv original-Alaska.csv
 ```
 
 ### Challenge: Counting Entries in a File
 
-The file `data/animals.txt` is a comma-separated variable (CSV) file of animals that were observed on certain dates.
-The following command will extract the second column of this CSV.
+There are two satellites that carry the MODIS sensor in orbit: Aqua and Terra.
+The active fire data files we have indicate which satellite detected each fire.
+How can we count the number of active fire detections between the two satellites in each region?
+
+**First, let's observe that the `tail` program has an option that allows us to skip the header line in our CSV files.**
 
 ```sh
-cut -d , -f 2 data/animals.txt
+$ head Alaska.csv
+$ tail -n +2 Alaska.csv
 ```
 
+The `satellite` field, which indicates (T)erra or (A)qua acquisitions, is the 8th column of our CSV file.
+**Take the following command and put it in a `for` loop that will iterate over every CSV file. Be sure to `echo` the filename in each iteration so we can keep track of each region.**
+
+```sh
+tail -n +2 Alaska.csv | cut -d "," -f 8 | sort | uniq -c
+```
+
+## Shell Scripts
+
+We've seen some pretty powerful features of the shell so far.
+Now, let's see how to build our own shell programs that we can re-use later and share with others.
+
+For computer languages like the one used in the Bash shell, a plain text file that contains one or more commands in that language is referred to as a *script.*
+Specifically, we're going to see how to write our own *shell scripts* that we can save for later re-use or share with other people who want to reproduce some task we designed.
+
+For this example, we'll modify our last command so that it counts number of daytime and nighttime fires in a given region.
+Here, the 13th column is a flag for (N)ight or (D)ay acquisitions.
+
+```sh
+$ tail -n +2 Alaska.csv | cut -d "," -f 13 | sort | uniq -c
+```
+
+We start by opening our text editor on the file that will become our shell script.
+
+```sh
+$ nano count_fires.sh
+```
+
+Because the file `count_fires.sh` does not exist, `nano` will create it and open the file for editing.
+Let's add the following line to our file:
+
+```sh
+$ tail -n +2 Alaska.csv | cut -d "," -f 13 | sort | uniq -c
+```
+
+Remember: We're not running this command, we're merely storing it in a file.
+After saving the file and exiting `nano`, we check that our shell script exists:
+
+```sh
+$ ls
+```
+
+Now that we've saved the file, we can ask the shell to execute the commands it contains.
+Our shell is called Bash, so we run the following command.
+
+```sh
+$ bash count_fires.sh
+```
+
+### Command-Line Arguments
+
+How can we change our script so that it counts the nighttime fires in any set of files we want, not just in `Alaska.csv`?
+We could edit `count_fires.sh` each time to change the filename, but that's not really any easier that re-typing the command each time.
+Instead, let's see how to modify our shell script to accept arguments as inputs to the commands it contains.
+
+```sh
+$ tail -n +2 "$1" | cut -d "," -f 13 | sort | uniq -c
+```
+
+Inside a shell script, `$1` means "the first filename (or other argument) on the command line."
+(We put quotes around `$1` just in case the filename contains spaces.)
+We can now run our script like this:
+
+```sh
+$ bash count_fires.sh Alaska.csv
+$ bash count_fires.sh Canada.csv
+```
+
+We now have a pretty cool script we can use later to accomplish the same task.
+If we download new active fire data the next day, the next week, or the next month, as long as nothing changed about the formatting of those data, we can run our script again to do the same job.
+**But what if we e-mailed our script to a collaborator? How would he or she know how to use our script and what it does?**
+
+Documenting a script is just as important as getting it to work.
+
+```sh
+# Count the number of fires, grouped by night and day, in a file.
+# Usage:
+#   bash count_fires.sh <filename>
+tail -n +2 "$1" | cut -d "," -f 13 | sort | uniq -c
+```
+
+Comments in shell scripts begin with a hash symbol, `#`.
+Anything that follows this symbol will be ignored by the shell.
+
+### Shell Scripting for Multiple Input Files
+
+What if we want to count the number of nighttime fires in multiple files?
+If we wanted to do this outside of our shell script, we would type:
+
+```sh
+$ tail -n +2 *.csv | cut -d "," -f 13 | sort | uniq -c
+```
+
+**But this output isn't what we want.**
+Here, the shell has executed the first part of our pipeline, the `tail` program, on all the input files, which results in a huge stream of text.
+The result is that the nighttime and daytime fires are counted across all of our files.
+This could be useful, but we want to count the nighttime and daytime fires *within* each region.
+**We'll need to add a `for` loop to our script to deal with this, but how can we tell our shell script to take an arbitrary number of filenames as command-line arguments?**
+
+```sh
+for filename in "$@"
+do
+  echo "$filename"
+  tail -n +2 "$filename" | cut -d "," -f 13 | sort | uniq -c
+done
+```
+
+Now, we can call our script as:
+
+```sh
+$ bash count_fires.sh *.csv
+```
+
+## Finding Things
+
+In the same way that many of us now use the word "Google" as a verb meaning "to find," Unix programmers often use the word "grep" with the same meaning.
+*grep* is a contraction of "global/regular expression/print," a sequence of commands in earlier Unix text editors.
+It's also the name of a very useful command-line program for finding things.
+
+For the following examples, we'll use a file that contains haikus taken from a 1998 competition in *Salon* magazine.
+
+```sh
+$ cd
+$ cd Desktop/data-shell/writing
+$ cat haiku.txt
+```
+
+Let's find the lines that contain the word "not."
+
+```sh
+$ grep "not" haiku.txt
+```
+
+**The first argument to `grep` is the pattern we're searching for.**
+The `grep` program searches through the file looking for matches to the specified pattern.
+
+```sh
+$ grep The haiku.txt
+```
+
+This time, our results include any line that contains the letters "The" in that order.
+One line contains these letters as part of a larger word, "Thesis."
+
+To restrict matches to lines containing the word "The" on its own, we can use the `-w` option with `grep`, which will limit the search to matching between word boundaries.
+
+```sh
+$ grep -w The haiku.txt
+```
+
+Sometimes, we don't want to search for a single word but an entire phrase.
+
+```sh
+$ grep -w "is not" haiku.txt
+```
+
+The quotes were optional when we had just a single word to search for but are necessary for phrases.
+It's also a good idea to use quotes to help visually distinguish the pattern argument from the file argument.
+
+Another useful option to `grep` is the `-n` flag, which displays the line number(s) for each line that matches.
+
+```sh
+$ grep -n "it" haiku.txt
+```
+
+We can combine flags just like with any other Unix command.
+When we do so, we can write the command one of two ways.
+
+```sh
+$ grep -n -w "the" haiku.txt
+$ grep -nw "the" haiku.txt
+```
+
+In either form, the order of the flags doesn't matter unless one of the flags require an argument to come directly after it.
+In such cases, the longer form is more clear.
+
+As a final example, we can use the `-i` option to make our search case-insensitive.
+
+```sh
+$ grep -n -w -i "the" haiku.txt
+```
+
+```sh
+$ grep --help
+```
+
+### Challenge: Counting Entries in a File (Part 2)
+
+```sh
+$ cd
+$ cd Desktop/data-shell
+```
+
+The file `data/animals.txt` is a comma-separated variable (CSV) file of animals that were observed on certain dates.
 How can you use the shell to count the number of times `rabbit` appears in this list?
 
 ```sh
-cut -d , -f 2 data/animals.txt | grep rabbit | wc -l
+$ cut -d , -f 2 data/animals.txt | grep rabbit | wc -l
 ```
