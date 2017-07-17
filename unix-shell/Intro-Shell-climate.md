@@ -590,6 +590,54 @@ What happened?
 **Note that the shell's prompt changed after we entered the first line of that `for` loop.**
 The `>` we see on each successive line is an indication that the shell is expecting more input, because the shell knows we're typing a multi-line `for` loop.
 
+### On Variable Names
+
+In the last example, we called the looping variable `filename` in order to make its purpose clear to human readers.
+However, if we wrote the loop as:
+
+```sh
+for X in Alaska.csv Canada.csv
+do
+  head -n 3 $X
+done
+```
+
+It would work the same way.
+**Don't do this.**
+Programs are only useful if people can understand them, so meaningless names like `X` increase the odds that the program won't do what its readers think it does.
+
+### More Complicated Loops
+
+```sh
+for filename in *.csv
+do
+  echo $filename
+  head -n 2 $filename | tail -n 1
+done
+```
+
+Here, the shell first expands the `*.csv` argument after `in` into a list of files it will process.
+The body of the loop then executes two commands for each of those files:
+
+- The first command prints out the name of the file;
+- The second command pipes the first two lines of the file, from the `head` program, into a program called `tail`. The `tail` program, as you might have guessed, displays the last line of whatever input it has to work with.
+
+**So, let's apply what we've learned to our original problem. We want to make a backup copy of each of these files.**
+
+```sh
+for filename in *.csv
+do
+  cp $filename original-$filename
+done
+```
+
+**How does the shell interpret the first iteration of this loop as a stand-alone command?**
+We'll assume the shell's list of files is in alphabetical order.
+
+```sh
+cp Alaska.csv original-Alaska.csv
+```
+
 ### Challenge: Counting Entries in a File
 
 The file `data/animals.txt` is a comma-separated variable (CSV) file of animals that were observed on certain dates.
