@@ -523,10 +523,6 @@ This programming model is called *"pipes and filters."*
 We've already seen pipes; a *filter* is a program like `wc` or `sort` that transforms a stream of input into a stream of output.
 Almost all of the standard Unix tools can work this way: unless told to do otherwise, they read from standard input, do something with what they've read, and write to standard output.
 
-**Other examples:**
-
-- Counting the number of atoms: `tail -n +3 cubane.pdb | tail -r | tail -n +3 | wc -l`
-
 ### Challenge: Removing Duplicate Entries
 
 Let's move to the data directory.
@@ -545,6 +541,54 @@ $ uniq salmon.txt
 
 How can we use the tools we've seen so far to get a unique list of salmon types?
 That is, how can we combine `uniq` with another program so that *all* non-unique lines are removed, not just the adjacent ones?
+
+## Loops
+
+We've just seen the primary reason why the Unix shell is so popular: simple, specialist programs that can be connected together with pipes to build up more complex programs.
+If we want to apply these "pipes and filters" to more than a couple of files, however, we are going to be typing the same command at the command line several times.
+**How can we apply the same actions to many different files?**
+
+In computer-aided analysis, we typically accomplish the repetition of a task through *loops.*
+Loops not only reduce the amount of typing, they reduce the number of mistakes that we are likely to make.
+
+To explore the power of the shell for repeating tasks, we'll explore a dataset containing the last 24 hours of active wildfires, as of July 17, 2017, in different parts of the globe.
+This dataset was [prepared by NASA](https://earthdata.nasa.gov/earth-observation-data/near-real-time/firms/active-fire-data) using observations from a space-borne satellite sensor named MODIS.
+
+```sh
+$ cd
+$ cd Desktop/active-fires
+```
+
+**Let's say, for starters, we want to backup these data files.**
+We can't do the following:
+
+```sh
+$ cp *.csv original-*.csv
+```
+
+Because the Unix shell expands the first argument of this command to the list of all `*.csv` files in the current working directory.
+When `cp` receives more than two inputs, it expects the last input to be a directory where it can copy all the files it was passed.
+Since there is no directory named `original-*.csv` in the current directory, we get an error.
+
+**Instead, we need to use a loop to some operation for each file in a list of files.**
+Here's a simple example that displays the first three lines of each file with a region name beginning with the word "South":
+
+```sh
+for filename in Alaska.csv Canada.csv
+do
+  head -n 3 $filename
+done
+```
+
+What happened?
+
+- When the shell sees the keyword `for`, it knows to repeat a command (or group of commands) once for each thing in a list.
+- The name that we provide immediately after the `for` keyword, which in this case is `filename`, is the name of the thing that is sequentially assigned a new value in each iteration. We call `filename`, in this case, a *variable.*
+- What happens in each iteration of the loop is whatever commands we put after the `do` and before the `done` keywords. This is called the *body* of the loop.
+- Inside the body of the loop, we need to reference the loop variable using a dollar sign, `$`, in front of its name. The dollar sign tells the shell interpreter to treat the variable as a variable name and substitute its value in its place, rather than to treat the variable name as literal text.
+
+**Note that the shell's prompt changed after we entered the first line of that `for` loop.**
+The `>` we see on each successive line is an indication that the shell is expecting more input, because the shell knows we're typing a multi-line `for` loop.
 
 ### Challenge: Counting Entries in a File
 
