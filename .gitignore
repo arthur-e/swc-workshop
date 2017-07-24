@@ -1,4 +1,5 @@
 syntax: glob
-*/.ipynb_checkpoints/*
+.ipynb_checkpoints
+__pycache__
 unix-shell/workshop
 r-intro-gapminder/scratch
