@@ -852,3 +852,69 @@ How can you use the shell to count the number of times `rabbit` appears in this 
 ```sh
 $ cut -d , -f 2 data/animals.txt | grep rabbit | wc -l
 ```
+
+### Searching the File System
+
+**While `grep` is used to find lines in files, the `find` command finds files themselves.**
+Let's first navigate to the `writing` directory.
+
+```sh
+$ cd
+$ cd Desktop/data-shell/writing
+$ find .
+```
+
+As always, the `.` symbol represents our current directory.
+When given this argument, the `find` program simply lists the name of every file in the current directory.
+So far, this isn't very useful; we need to learn some options for `find`.
+
+```sh
+$ find . -type d
+```
+
+With the `-type` option, we can search for directories (with `d`) or files (with `f`).
+
+```sh
+$ find . -name *.txt
+```
+
+Using the `-name` switch, we should be able to use globbing to match filenames.
+**But in this example, the only result we see is `haiku.txt`, while we know there actually are other text files in directories below this one.**
+
+The issue is that when we provided `*.txt` unquoted, the wildcard is automatically expanded and matches the only text file in the current directory.
+If we want to match any text file in the current directory *or* directories farther down, we should quote the argument.
+
+```sh
+$ find . -name '*.txt'
+```
+
+It may seem that `find` is very similar to `ls`.
+`ls` and `find` can be made to do similar things given the right options, but under normal circumstances, `ls` lists everything it can, while `find` searches for things with certain properties and shows them.
+
+Once again, the real power of the Unix shell comes from using tools together.
+We can combine `find` with `grep` to do some powerful things.
+For instance, while `find` alone will get us all of the Protein Data Bank (PDB) files in this file system...
+
+```sh
+$ cd
+$ find Desktop/data-shell -name '*.pdb'
+```
+
+...We can combine it with `grep` to iteratively search each of these files.
+
+```sh
+$ grep "FE" $(find Desktop/data-shell -name '*.pdb')
+```
+
+Here, we've introduced a new syntax.
+When the shell executes this command, the first thing it does is run whatever is inside the `$()`.
+It then replaces the `$()` expression with that command's output.
+This is essential when we want to use a tool in combination with a program like `grep` or `wc`, which both expect file paths to be given as arguments.
+These programs won't accept file paths through standard input (in a pipe).
+
+For instance, compare the difference in results between these two commands:
+
+```sh
+$ find Desktop/data-shell/molecules -name '*.pdb' | wc -l
+$ wc -l $(find Desktop/data-shell/molecules -name '*.pdb')
+```
