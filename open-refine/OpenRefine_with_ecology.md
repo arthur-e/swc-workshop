@@ -136,6 +136,64 @@ OpenRefine provides a tool to remove blank characters, like tabs and spaces, fro
 1. In the header's drop-down menu for the column `scientificName`, choose `Edit cells`, then `Common transforms`, then `Trim leading and trailing whitespace`.
 2. Now, perform the `Split` operation from earlier on the `scientificName` column. This time, you should see only two new columns.
 
-## Challenge: Renaming Columns
+### Challenge: Renaming Columns
 
-As a group... You can rename columns by choosing `Edit Column` and then `Rename this column` from the drop-down menu by the column header. Try renaming the `scientificName 2` column to the ``
+As a group... You can rename columns by choosing `Edit Column` and then `Rename this column` from the drop-down menu by the column header. Try renaming the `scientificName 2` column to `species`.
+
+Did you get an error? Why? How can you fix it?
+
+## Filtering
+
+We can filter to a subset of the rows in our table by defining rules for matching rows.
+
+1. In the context menu for `scientificName`, select `Text filter`.
+2. Type `bai`; there should be 48 matching rows out of the original 35,549 rows.
+3. At the top change the view to `Show` 50 `rows`.
+
+We get two total species returned. If we wanted to limit our selection to one species, *Chaetodipus baileyi,* we could make our search string case-sensitive.
+
+**Faceting and filtering look very similar. A good distinction is that faceting gives you an overview description of all of the data that is currently selected, while filtering allows you to select a subset of your data for analysis.**
+
+Click the `Remove All` button at the top-left before continuing.
+
+## Sorting
+
+`TODO`
+
+## Examining Numeric Data
+
+When a table is first imported into OpenRefine, al of the columns are treated as containing text values.
+This provides maximum flexibility, without any danger of unintentional changes to your data.
+How can we transform text columns into other data types?
+
+1. From the context menu for `recordID`, select `Edit cells`, then `Common transforms...`, then `To number`.
+2. Note the change in alignment and text color for the values in this column.
+
+### Challenge: Transforming Data Types
+
+Transform three more columns, including the `period` column, from text to numbers.
+Can all columns be transformed to numbers?
+
+### Missing Values or Errors
+
+In numeric columns, we often have missing values or clearly erroneous values entered.
+We can fix these using a `Numeric facet`.
+
+1. For a column you transformed to numbers, edit one or two cells, replacing the numbers with text (such as `x` or `missing`) or make them blank.
+2. From the context menu for that column, apply a `Numeric facet`.
+3. Note that there are several checkboxes in this facet: `Numeric`, `Non-numeric`, `Blank`, and `Error`. Below these are counts of the number of cells in each category. You should see checkboxes for `Non-numeric` and `Blank` if you changed some values.
+
+**By checking/ un-checking these boxes, we can identify missing or corrupted values in a given numeric column.**
+
+### Scatterplot Faceting
+
+Now that we have multiple columns representing numbers, we can see how they relate to one another using the scatterplot facet.
+
+1. From the context menu for the `recordID` column, select `Facet` and then `Scatterplot facet`.
+2. A new window called `Scatterplot Matrix` has appeared.
+3. Click on just one of the scatterplots. This will allow us to facet our data using just the relationship between those two variables.
+4. In the scatterplot in the left-hand panel, click, hold, and drag the cursor to create a rectangle. **This will facet the table by those records that fall within the parameter space of your rectangle.**
+
+### Challenge: Faceting and Filtering
+
+Apply a text filter again to the `scientificName` column; e.g., search for `bai`. Notice how the scatterplot has changed.
