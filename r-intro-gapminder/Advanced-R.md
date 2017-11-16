@@ -870,6 +870,27 @@ gapminder %>%
   print(n = 15)
 ```
 
+**What happens when we use `mutate()` instead of `summarize()` after a `group_by()` step?**
+While `summarize()` returns exactly one value for every group, `mutate()` will return a value for all the rows within a group, but it will still perform that calculation over only the rows within the group.
+Compare the following two examples to the one above:
+
+```r
+# Calculates max life expectancy across ALL countries, all years
+gapminder %>%
+  mutate(max.lifeExp = max(lifeExp)) %>%
+  print(n = 15)
+  
+# Calculates max life expectancy for each country, across all years;
+#   returns the same value (max life expectancy for the respective country)
+#   for all rows
+gapminder %>%
+  group_by(country) %>%
+  mutate(max.lifeExp = max(lifeExp)) %>%
+  print(n = 15)
+```
+
+### Tabluation (Counting Rows)
+
 We can perform tabulation using the `tally()` function.
 How many countries are found in each continent in 2007?
 
