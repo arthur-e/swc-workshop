@@ -49,7 +49,6 @@ install.packages(c('plyr', 'dplyr', 'tidyr', 'ggplot2'))
   - Subsetting Data Frames
   - `aggregate()`
   - Function Application
-  - The `plyr` Package
 6. Analyzing data with `dplyr`
   - `select()` and `filter()`
   - Pipes
@@ -734,89 +733,24 @@ with(gapminder[gapminder$year == 2007,], tapply(lifeExp,
     }))
 ```
 
-### The plyr Package
+## Analyzing Data with dplyr
 
-The aggregation techniques we've seen so far are all built into base R.
-We can explore some alternative techniques that are available in third-party libraries developed by the R community.
+Because the R programming language is open source, the developer community moves quickly and a number of different tools are available for a wide variety of tasks.
+We'll now explore some additional tools available in third-party libraries developed by the R community.
 **R packages** are basically sets of additional functions that let you do more stuff.
-The functions we’ve been using so far, like str() or data.frame(), come built into R; packages give you access to more of them.
+The functions we’ve been using so far, like `str()` or `data.frame()`, come built into R; packages give you access to more of them.
+
 Before you use a package for the first time you need to install it on your machine, and then you should import it in every subsequent R session when you need it.
 R packages can be installed using the `install.packages()` function.
-Let's try to install the `plyr` package, which provides advanced data querying and aggregation.
+Let's try to install the `dplyr` package, which provides advanced data querying and aggregation.
 
 ```r
-install.packages('plyr')
+install.packages('dplyr')
 ```
 
 Now that we've installed the package, we can load it into our current R session with the `library()` function.
 
 ```r
-library(plyr)
-```
-
-The `plyr` package has a number of useful functions including `summarize()`, which can be used to summarize our `gapminder` data frame multiple times.
-
-```r
-summarize(gapminder,
-  min.life.expectancy = min(lifeExp),
-  max.life.expectancy = max(lifeExp),
-  mean.population = mean(pop))
-```
-
-**Unlike the `aggregate()` and `tapply()` functions, `summarize()` allows us to calculate multiple aggregates at once. However, it is unable to distinguish among subgroups.**
-To aggregate within groups, we can combine `summarize()` with the `ddply()` function.
-
-```r
-?ddply
-```
-
-`ddply()` introduces the **split, apply, combine** workflow to our skill set.
-This workflow allows us to split apart a data frame based on the levels (or unique values) of one or more columns, apply a function to those subgroups, and combine the results together.
-For instance, we can answer Question 3 with this workflow as follows.
-
-```r
-ddply(gapminder[gapminder$year == 2007,], 'continent', summarize,
-  life.exp.range = max(lifeExp) - min(lifeExp))
-```
-
-R executes this code in this order:
-
-- First, the `gapminder` data frame is subset so that only those records from 2007 are retained.
-- Next, `ddply()` is called, and it begins by splitting the subset data frame into multiple groups based on the unique values (factor levels) of the `continent` column.
-- Then, `summarize()` is called on each of those subgroups; `summarize()` calculates all of the subsequent arguments to the `ddply()` function, here, calculating the range in life expectancy.
-- Finally, `ddply()` takes all the results of the `summarize()` function and combines them together into a data frame.
-
-Just as we saw with `summarize()` when it was called alone, we can calculate multiple aggregates at once in this way.
-
-## Analyzing Data with dplyr
-
-Because the R programming language is open source, the developer community moves quickly and a number of different tools are available for a wide variety of tasks.
-We've just seen three ways of summarizing our `gapminder` data frame that we can use to find the range in 2007 life expectancies across the continents.
-
-```r
-# Outputs a data frame
-with(gapminder[gapminder$year == 2007,],
-  aggregate(lifeExp, by = list(continent), FUN = function (values) {
-    max(values) - min(values)
-    }))
-
-# Outputs a vector/ array
-with(gapminder[gapminder$year == 2007,],
-  tapply(lifeExp, INDEX = continent, FUN = function (values) {
-    max(values) - min(values)
-    }))
-
-# Outputs a data frame
-library(plyr)
-ddply(gapminder[gapminder$year == 2007,], 'continent', summarize,
-  life.exp.range = max(lifeExp) - min(lifeExp))
-```
-
-Now, we'll take a look at another R package that can help us streamline our workflows for querying, subsetting, and summarizing our datasets.
-`dplyr` is an R package for making data manipulation easier.
-
-```r
-install.packages('dplyr')
 library(dplyr)
 ```
 
@@ -824,8 +758,7 @@ library(dplyr)
 
 The package `dplyr` provides easy tools for the most common data manipulation tasks.
 It is built to work directly with data frames.
-As you might expect, `dplyr` is an improvement on the `plyr` package, which has been in use for some time but can be slow in some use cases.
-`dplyr` addresses this by porting much of the computation to C++.
+`dplyr` can perform fast manipulations on relatively large datasets because much of the underlying code is written in C++ and compiled to binaries that connect to R.
 An additional feature is the ability to work directly with data stored in an external database.
 The benefits of doing this are that the data can be managed natively in a relational database, queries can be conducted on that database, and only the results of the query returned.
 
@@ -835,8 +768,6 @@ The database connections essentially remove that limitation in that you can have
 ### Selecting and Filtering with dplyr
 
 We're going to learn some of the most common `dplyr` functions: `select()`, `filter()`, `mutate()`, `group_by()`, and `summarize()`.
-Recall that we saw the `summarize()` function in the `plyr` package.
-The `summarize()` function in `dplyr` does the same thing but is faster.
 
 To select columns from a data frame, use `select()`.
 The first argument to this function is the data frame (`gapminder`), and the subsequent arguments are the columns to keep.
@@ -912,8 +843,10 @@ Note there are two ways to do this in `dplyr`.
 
 ### Split-Apply-Combine with dplyr
 
-We saw how the split, apply, combine workflow can be used with the `plyr` package.
-In `dplyr`, to do the same, we need to introduce the `group_by` function.
+`dplyr` introduces the **split, apply, combine** workflow to our skill set.
+This workflow allows us to *split* apart a data frame based on the levels (or unique values) of one or more columns, *apply* a function to those subgroups, and *combine* the results together.
+
+To split the data, we need to introduce the `group_by` function.
 `group_by()` is often used together with `summarize()`, which collapses each group into a single-row summary of that group.
 `group_by()` takes as argument the column names that contain the categorical variables for which you want to calculate the summary statistics.
 For instance, to view the maximum life expectancy by country in 2007:
@@ -1059,7 +992,6 @@ gapminder %>%
 * Numeric sequences for indexing vectors and data frames
 * Subsetting data frames
 * Aggregating data frames with `aggregate()` or `apply()`
-* The `plyr` package for transforming data frames
 * The split-apply-combine workflow
 * How to use `dplyr` and pipes in a data analysis workflow
 
