@@ -159,3 +159,283 @@ round(digits = 2, x = 3.14159)
 ```
 
 ## Vectors and Data Types
+
+We usually want to work with more than just a handful of values when we have a real-world analysis problem.
+R has several **data structures** that can hold multiple values at once, which allows us to assign a variable name to a series of measurements or related values.
+
+A **vector** is the most common and basic data type in R.
+Vectors can be constructed using the `c()` function, which we call the "concatenate" function.
+So, suppose we have a set of related animal weight measurements in grams.
+
+```r
+weight_g <- c(40, 35, 90)
+weight_g
+```
+
+A vector can also contain character strings:
+
+```r
+animals <- c('mouse', 'rat', 'dog')
+animals
+```
+
+The quotes around `mouse`, `rat`, and `dog` are essential here.
+Without the quotes, R will assume there are variables out there named `mouse`, `rat`, and `dog`.
+As these variables don't exist in R's memory, there would be an error message.
+
+**There are many convenience functions in R that allow us to inspect the contents of a vector.**
+
+```r
+length(animals)
+class(weight_g)
+class(animals)
+str(weight_g)
+```
+
+Here's another type of vector that contains Boolean or logical values.
+
+```r
+a_vector <- c(TRUE, FALSE, TRUE)
+class(a_vector)
+```
+
+We can also use the `c()` function to add new elements to an existing vector.
+
+```r
+more_animals <- c(animals, 'cat')
+more_animals
+more_animals <- c('cat', animals)
+more_animals
+```
+
+### Challenge: Vectors and Multiple Data Types
+
+We've seen that atomic vectors can be of type character, numeric (or double), integer, and logical.
+But what happens if we try to mix these types in a single vector?
+With a partner, try to figure out what R is doing in the following examples.
+Hint: Remember you can use `class()` to figure out what data type a vector contains.
+
+```r
+num_char <- c(1, 2, 3, "a")
+num_logical <- c(1, 2, 3, TRUE)
+char_logical <- c("a", "b", "c", TRUE)
+tricky <- c(1, 2, 3, "4")
+```
+
+## Subsetting Vectors
+
+We can extract one or more values from a vector by **indexing.**
+That is, we can specify the numerical indices that represent the position or positions of the values we want to extract.
+
+```r
+more_animals
+more_animals[2]
+more_animals[c(3,2)]
+more_animals[c(3,2,3,2)]
+```
+
+### Conditional Subsetting
+
+Most of the time, we don't want to subset a vector by specifying numerical indices.
+Instead, we want to extract those parts of a vector that satisfy a certain condition.
+In R, we can use **conditional statements** to extract certain elements.
+
+```r
+1 == 1
+1 != 2
+!TRUE
+1 < 2
+```
+
+Now, let's take what we've learned about the conditional operators and statements in R and use that to subset a vector.
+
+```r
+weight_g
+weight_g > 50
+```
+
+When we have a logical vector, it can be used to select elements from another vector.
+Wherever there is a `TRUE` value in the logical vector, a value is returned.
+
+```r
+animals
+animals[c(TRUE, TRUE, FALSE)]
+```
+
+We've seen that a conditional statement on a vector in R produces a logical vector.
+We can combine that knowledge with our knowledge of subsetting R vectors to obtain an easy way to subset any vector.
+
+```r
+weight_g[weight_g > 50]
+animals[weight_g > 50]
+```
+
+We definitely want to make sure the two vectors are of equal length in that second example.
+
+```r
+some_animals <- c('cat', 'rat', 'cat', 'dog', 'rat')
+some_animals[some_animals == 'cat' | some_animals == 'dog']
+some_animals[!(some_animals == 'cat' | some_animals == 'dog')]
+some_animals[some_animals == 'cat' & some_animals == 'dog']
+```
+
+A common task is to search a vector for the occurrence of some value.
+
+```r
+'cat' %in% some_animals
+some_animals %in% c('cat')
+some_animals[some_animals %in% c('cat')]
+```
+
+## Missing Data
+
+Real-world data often include missing values.
+This might be because the data come from a survey and a respondent declined to answer a question or the data come from an observational study and a certain measurement could not be made.
+In R, missing data are represented as `NA`.
+
+```r
+heights <- c(2, 4, 4, NA, 6)
+heights
+mean(heights)
+max(heights)
+mean(heights, na.rm = TRUE)
+max(heights, na.rm = TRUE)
+```
+
+If your data include missing values, you want to be come familiar with a few helper functions for handling missing cases.
+
+```r
+# Extract elements which are not missing
+is.na(heights)
+heights[!is.na(heights)]
+
+# Return the vector with all missing cases omitted
+heights[complete.cases(heights)]
+```
+
+### Challenge: Working with Missing Data
+
+Using the following vector of length measurements:
+
+1) Create a new vector with the `NA` values removed;
+2) Calculate the median of the new vector;
+
+Hint: You can use double question-marks and a text string to do a keyword search of the documentation: `??"median"`.
+
+```r
+lengths <- c(10, 24, NA, 18, NA, 20)
+```
+
+# Getting Started with Data
+
+For this next part, we'll work a real-world dataset.
+The data come from a study of the species and weights of animals caught in the study area.
+The dataset is stored as a comma-separated variable (CSV) file.
+Each row holds information for a single animal.
+
+We'll use the function `download.file()` to download the CSV file that contains the survey data.
+Then, we'll use the function `read.csv()` to read-in the contents of the CSV file.
+
+```r
+download.file("https://raw.githubusercontent.com/arthur-e/swc-workshop/master/data/ecology-surveys.csv",
+              "surveys.csv")
+
+surveys <- read.csv('surveys.csv')
+```
+
+Recall that `read.csv()` doesn't return any output here because we've assigned its output to a variable, `surveys`.
+The default data structure R uses to represent tabular data is called a **data frame.**
+
+**What are data frames?**
+A data frame is a representation of tabular data where the columns are vectors of the same length.
+Because the columns are vectors, each contains only one type of data.
+However, because there can be multiple columns in a data frame, the data frame itself can contain multiple data types.
+
+There are several helper functions for working with data frames.
+After we've brought new data into R, we typically want to check that everything looks okay with the `head()` function.
+
+```r
+head(surveys)
+```
+
+There are many other helpful functions we can use to interrogate our data frames.
+
+```r
+dim(surveys)
+nrow(surveys)
+ncol(surveys)
+head(surveys)
+tail(surveys)
+names(surveys)
+summary(surveys)
+```
+
+## Indexing and Subsetting Data Frames
+
+When we were working with vectors, we saw how we could subset a vector by specifying one or more indices representing the position(s) of value(s) stored in that vector.
+A vector can be used to represent a column in a data frame.
+Because data frames have both rows and columns, we need two numbers to index a value inside a data frame.
+In this way, it's kind of like specifying the "coordinates" on a map.
+
+```r
+# The first element in the first column
+surveys[1, 1]
+
+# The first element in the 6th column
+surveys[1, 6]
+
+# The first column in the data frame, a vector
+surveys[,1]
+
+# Same as before
+surveys[1]
+```
+
+The coordinates of a data frame's value are always specified as row-comma-column or `[row, column]`.
+
+```r
+# The first *row* in the data frame, also a vector
+surveys[1,]
+```
+
+We can use a special syntax for creating a sequence of numbers in order to get, say, the first 10 rows of a data frame.
+
+```r
+1:10
+surveys[1:10,]
+surveys[1:10,5]
+```
+
+We can also exclude certain columns or rows using a negative sign, `-`.
+
+```r
+# All but the first column
+surveys[,-1]
+
+# All but the first three rows
+surveys[-c(1,2,3),]
+```
+
+A better way to extract a named column from a data frame is to use its name.
+Note that, in R, there are several ways to do the same thing.
+While they each return the same *information,* they return a different data type; the first example returns a data frame, while the other examples return vectors.
+
+```r
+surveys['species_id']
+surveys[,'species_id']
+surveys[['species_id']]
+surveys$species_id
+```
+
+### Challenge: Working with Data Frames
+
+We saw how we can use the colon character to quickly create numeric sequences and how those numeric sequences can be used to extract the rows of a data frame.
+
+```r
+1:5
+surveys[1:5,]
+```
+
+There's a more general function available in R to create number sequences.
+Read the help documentation on the `seq()` function.
+Then, use `seq()` to extract every 10th row of the `surveys` data frame, starting with row 10.
