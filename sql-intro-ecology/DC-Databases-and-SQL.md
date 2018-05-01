@@ -378,8 +378,8 @@ In the `SELECT` clause we specified:
 - `avg(weight)`: Here, the database manager takes the mean of each group of weights for each year.
 
 **The problem is that the database manager wasn't told how to aggregate the `sex` field.**
-When SQLite is asked to aggregate a field but isn't told how to do so, it chooses an actual value that appears in the input set of values more or less at random.
-For instance, if we see an `M` in the `sex` field in 1978, this could be because only males were capture in this year, because the first value in the set of `sex` values was `M`, or for an entirely different reason.
+When SQLite is asked to aggregate a field but isn't told how to do so, it choose an actual value that appears in the input set of values more or less at random.
+For instance, if we see an `M` in the `sex` field in 1978, this could be because only males were captured in this year, because the first value in the set of `sex` values was `M`, or for entirely different reason.
 
 **It's very important for you to know that this is non-standard behavior and will not work in all database management systems.**
 If you use PostgreSQL, for instance, you will get an error.
@@ -541,24 +541,13 @@ We can alias table names, as in this example.
         ON s.plot_id = pl.plot_id
      LIMIT 5;
 
-## Connecting to SQL in Python
-
-Because the database manager provides all sorts of services for managing and protecting the integrity of our data, we don't open the database like a regular file.
-Instead, we open a connection to the database and use this connection to issue commands to the database manager.
-
-```py
-import sqlite3
-connection = sqlite3.connect('survey.db')
-```
-
 ## Connecting to SQL in R
 
 ```r
 install.packages('RSQLite')
 ```
 
-Because the database manager provides all sorts of services for managing and protecting the integrity of our data, we don't open the database like a regular file.
-Instead, we open a connection to the database and use this connection to issue commands to the database manager.
+**Because the database manager provides all sorts of services for managing and protecting the integrity of our data, we don't open the database like a regular file. Instead, we open a connection to the database and use this connection to issue commands to the database manager.**
 
 ```r
 library(RSQLite)
