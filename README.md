@@ -1,4 +1,4 @@
-# Acknolwedgements
+# Acknowledgements
 
 The notes for each workshop are derivative of either the official Software Carpentry or Data Carpentry lessons and are CC-By-SA the Software Carpentry Foundation. In addition:
 
