@@ -245,7 +245,9 @@ There is no single right way to organize a project but there are important best 
 Using RStudio's project management pane at the lower-right, create a new folder called `data` inside your project folder.
 **Then, copy the `ecology.csv` file to the new `data` directory.**
 
-## Connecting to SQLite
+## Starting with Data Structures
+
+**Optional: Connecting to SQLite**
 
 ```r
 library(RSQLite)
@@ -269,8 +271,6 @@ summary(surveys)
 dbDisconnect(conn)
 rm(conn)
 ```
-
-## Starting with Data Structures
 
 Let's load in some data.
 
@@ -635,14 +635,14 @@ To select columns from a data frame, use `select()`.
 The first argument to this function is the data frame (`surveys`), and the subsequent arguments are the columns to keep.
 
 ```r
-output <- select(gapminder, year, taxa, weight)
+output <- select(surveys, year, taxa, weight)
 head(output)
 ```
 
 To choose rows, use `filter()`.
 
 ```r
-filter(gapminder, taxa == 'Rodent')
+filter(surveys, taxa == 'Rodent')
 ```
 
 ### Pipes
