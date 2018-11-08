@@ -1,4 +1,16 @@
+---
+title: "R for Spatial Data Analysis"
+author: "K. Arthur Endsley"
+date: "November 16, 2018"
+output: html_document
+---
+
 # R for Spatial Data Analysis
+
+```{r setup, echo=F}
+library(knitr)
+opts_knit$set(root.dir = '/usr/local/dev/swc-workshop')
+```
 
 Some of the material is repurposed from [the Data Carpentry lesson on Ecology](http://www.datacarpentry.org/R-ecology-lesson/01-intro-to-r.html), which is released under an open license.
 Some is adapted from [Tracy K. Teal's lesson](http://tracykteal.github.io/r-novice-gapminder/) and [John Moreau's workshop at the Federal Reserve Board](https://github.com/JohnRMoreau/2016-04-07-FederalReserveBoard/wiki) under a CC-By-SA license.
@@ -44,7 +56,7 @@ Let's quickly review programming in R so everyone's on the same page before we d
 There are five (5) atomic data types in R.
 We can use the `typeof()` to determine the type of a data value.
 
-```r
+```{r}
 # Double-precision (decimal numbers)
 typeof(3.14159)
 
@@ -69,19 +81,19 @@ For various reasons we won't go into, computers typically only approximate decim
 If we don't guard against this, we may see some surprising results.
 Numbers that seem to be equal may actually have different underlying representations and therefore be different by a small margin of error (called machine numeric tolerance).
 
-```r
+```{r}
 0.1 == 0.3 / 3
 ```
 
 **In general, don't use `==` to compare numbers unless they are integers. Instead, use the all `all.equal` function.**
 
-```r
+```{r}
 all.equal(0.1, 0.3 / 3)
 ```
 
 ### Variables and Assignment
 
-```r
+```{r}
 x <- 1/2
 ```
 
@@ -89,7 +101,7 @@ Variable names in R can contain any letters, numbers, the underscore, or the per
 R is probably the only programming language that allows you to use the period or dot character in a variable name.
 For this reason, some R experts advise against using such variable names.
 
-```r
+```{r}
 x2 <- 3/4
 my.parameter <- 'something'
 my_parameter <- 'something else'
@@ -101,7 +113,7 @@ Plus, RStudio makes it easier to type this operator with a keyboard shortcut: [A
 
 ### Functions
 
-```r
+```{r}
 pow10 <- function (value) {
   10^value
 }
@@ -125,14 +137,14 @@ pow10(log10(100))
 
 Let's load in the Gapminder data.
 
-```r
+```{r}
 surveys <- read.csv('data/gapminder-FiveYearData.csv',
   stringsAsFactors = FALSE)
 ```
 
 Typically, the first thing we want to do after reading in some data is to take a quick look at it to verify its integrity.
 
-```r
+```{r}
 head(surveys)
 tail(surveys)
 ```
@@ -146,7 +158,7 @@ Each vector represents a column, and each vector can be of a different data type
 Vectors in R are a sequence of values with the same data type.
 We can use the `c()` function to create new vectors.
 
-```r
+```{r}
 x1 <- c(1, 2, 3)
 x2 <- c('a', 'b', 'c')
 ```
@@ -154,7 +166,7 @@ x2 <- c('a', 'b', 'c')
 We can construct data frames as a collection of vectors using the `data.frame()` function.
 Note that if we try to put unlike data types in a single vector, they get coerced to the most flexible data type.
 
-```r
+```{r}
 df <- data.frame(
   x1 = c(TRUE, FALSE, TRUE),
   x2 = c(1, 'red', 2))
@@ -163,21 +175,21 @@ df <- data.frame(
 A data structure in R that is very similar to vectors is the `list` class.
 **Unlike vectors, lists can contain elements of varying data types and even varying classes.**
 
-```r
-list(99, TRUE 'balloons')
+```{r}
+list(99, TRUE, 'balloons')
 list(1:10, c(TRUE, FALSE))
 ```
 
 A data frame is like a list in that it is a collection of multiple vectors, each with a different data type.
 We can confirm this with the `str()` function.
 
-```r
+```{r}
 str(surveys)
 ```
 
 We can ask R about data structures using the `class()` function.
 
-```r
+```{r}
 class(list())
 class(surveys)
 ```
@@ -185,7 +197,7 @@ class(surveys)
 **R provides several ways to access the columns of a data frame.**
 It's important to understand the differences between them and what they each return.
 
-```r
+```{r}
 class(surveys$year) # Returns a numeric vector
 class(surveys['year']) # Returns a data frame
 class(surveys[['year']]) # Returns a numeric vector
@@ -197,16 +209,13 @@ class(surveys[,4]) # Returns a numeric vector
 Based on the output of the `str()` function, answer the following questions.
 
 1. How many rows and columns are there in the data frame?
-2. How many species have been recorded in this data frame?
-
-As you can see, many of the columns consist of integers, however, the columns `species_id` and `sex` are of a special class called `factor`.
-Before we learn more about the `data.frame` class, let's talk about factors.
+2. What does each row represent? (Hint: Are countries, continents recorded just once or multiple times? Why?)
 
 ## Data Frames
 
 **There are several questions we can answer about our data frames with built-in functions.**
 
-```r
+```{r}
 dim(surveys)
 nrow(surveys)
 ncol(surveys)
@@ -221,13 +230,13 @@ Most of these functions are "generic;" that is, they can be used on other types 
 
 **Recall that in R, the colon character is a special function for creating sequences.**
 
-```r
+```{r}
 1:10
 ```
 
 This is a special case of the more general `seq()` function.
 
-```r
+```{r}
 seq(1, 10)
 seq(1, 10, by = 2)
 ```
@@ -236,7 +245,7 @@ seq(1, 10, by = 2)
 Our survey data frame has rows and columns (it has 2 dimensions), if we want to extract some specific data from it, we need to specify the "coordinates" we want from it.
 Row numbers come first, followed by column numbers, **though when we provide only one number it is interpreted as denoting a column.**
 
-```r
+```{r}
 # First column of surveys
 surveys[1]
 
@@ -261,7 +270,7 @@ surveys[1:6, ]
 
 We can also use negative numbers to exclude parts of a data frame.
 
-```r
+```{r}
 # The first column removed
 head(surveys[, -1])
 
@@ -271,7 +280,7 @@ head(surveys[, -2:-4])
 
 Recall that to subset the data frame's entire columns we can use the column names.
 
-```r
+```{r}
 surveys['year']   # Result is a data frame
 surveys[, 'year'] # Result is a vector
 surveys$year      # Result is a vector
@@ -288,7 +297,6 @@ Let's learn how to use R's advanced data manipulation and aggregation features t
 
 1. Which countries had a life expectancy lower than 30 years of age in 1952?
 2. What was the mean per-capita GDP between 2002 and 2007 for each country?
-3. What is the range in life expectancy for each continent?
 
 **To answer these questions, we'll combine relatively simple tasks in R together, progressively building towards a more complex answer.**
 
@@ -297,7 +305,7 @@ Let's learn how to use R's advanced data manipulation and aggregation features t
 To answer our first question, we need to learn about subsetting data frames.
 Recall our comparison operators; we want to find those entries of the `lifeExp` column that are less than 30.
 
-```r
+```{r}
 surveys$lifeExp < 30
 ```
 
@@ -309,7 +317,7 @@ The result is a logical vector with `TRUE` wherever the `lifeExp` value is less 
 **Thus, when we subset the rows of `gapminder` with this logical vector, we obtain only those rows that matched.**
 Finally, we specified we just wanted the `country` column in this result.
 
-```r
+```{r}
 surveys[surveys$lifeExp < 30, 'country']
 ```
 
@@ -329,13 +337,13 @@ Before you use a package for the first time you need to install it on your machi
 R packages can be installed using the `install.packages()` function.
 Let's try to install the `dplyr` package, which provides advanced data querying and aggregation.
 
-```r
+```{r}
 install.packages('dplyr')
 ```
 
 Now that we've installed the package, we can load it into our current R session with the `library()` function.
 
-```r
+```{r warning=F, echo=F}
 library(dplyr)
 ```
 
@@ -358,20 +366,16 @@ We're going to learn some of the most common `dplyr` functions: `select()`, `fil
 To select columns from a data frame, use `select()`.
 The first argument to this function is the data frame (`surveys`), and the subsequent arguments are the columns to keep.
 
-```r
+```{r}
 output <- select(surveys, country, year, lifeExp)
 head(output)
 ```
 
 To choose rows, use `filter()`.
 
-```r
+```{r}
 filter(surveys, country == 'China')
 ```
-
-**Challenge: Stepwise Function Application**
-
-Combine the last two operations: We want to `filter()` the `surveys` data frame to just those rows from China and we also want to display only the `country`, `year`, and `lifeExp` columns.
 
 ### Pipes
 
@@ -387,7 +391,7 @@ Pipes let you take the output of one function and send it directly to the next, 
 In R, the pipe operator, %>%, is available in the `magrittr` package, which is installed as part of `dplyr`.
 **Let's get some practice using pipes.**
 
-```r
+```{r}
 surveys %>%
   filter(country == 'China') %>%
   select(year, lifeExp)
@@ -395,7 +399,7 @@ surveys %>%
 
 If we want to save the output of this **pipeline,** we can assign it to a new variable.
 
-```r
+```{r}
 china.surveys <- surveys %>%
   filter(country == 'China') %>%
   select(year, lifeExp)
@@ -403,7 +407,7 @@ china.surveys <- surveys %>%
 
 **Why does one of the following example not work?**
 
-```r
+```{r}
 surveys %>%
   select(year, lifeExp) %>%
   filter(country == 'China')
@@ -424,7 +428,7 @@ Frequently you'll want to create new columns based on the values in existing col
 For this we'll use `mutate()`.
 **For instance, we might want to convert per-capita GDP to total GDP.**
 
-```r
+```{r}
 surveys %>%
   mutate(gdpTotal = gdpPercap * pop)
 ```
@@ -433,14 +437,10 @@ Woops.
 This is a lot to look at.
 Luckily, we can pipe the results into the `head()` function.
 
-```r
+```{r}
 surveys %>%
   mutate(gdpTotal = gdpPercap * pop) %>%
   head()
-
-surveys %>%
-  mutate(gdpTotal = gdpPercap * pop) %>%
-  tail()
 ```
 
 ### Split-Apply-Combine with dplyr
@@ -452,7 +452,7 @@ This workflow allows us to split apart a data frame based on the levels (or uniq
 `group_by()` is often used together with `summarize()`, which collapses each group into a single-row summary of that group.
 `group_by()` takes as argument the column names that contain the categorical variables for which you want to calculate the summary statistics.
 
-```r
+```{r}
 surveys %>%
   group_by(year) %>%
   summarize(median(lifeExp))
@@ -462,7 +462,7 @@ surveys %>%
 
 Note that we can group by more than one variable at a time.
 
-```r
+```{r}
 surveys %>%
   group_by(continent, year) %>%
   summarize(median(lifeExp)) %>%
@@ -473,24 +473,9 @@ surveys %>%
 
 Using `filter`, `group_by`, and `summarize`, answer our second question: **What was the mean per-capita GDP between 2002 and 2007 for each country?**
 
-### More on dplyr
-
-**When we use the `summarize()` function in `dplyr`, we can see that the output appears truncated; instead of running off the screen, we get just the first few rows and a count of how many remain to be seen.**
-That's because `dplyr`, instead of a `data.frame`, has returned an instance of the `tbl_df` class.
-This is a data structure that's very similar to a data frame; for our purposes the only difference is that it won't automatically show too many rows.
-It also displays the data type for each column under its name.
-If you want to display more data on the screen, you can add the `print()` function at the end with the argument `n` specifying the number of rows to display.
-
-```r
-surveys %>%
-  group_by(continent, year) %>%
-  summarize(median(lifeExp)) %>%
-  print(n = 15)
-```
-
 ------------------------------
 
-## Checkpoint: Data Analysis in R
+# Checkpoint: Data Analysis in R
 
 **Now you should be familiar with the following:**
 
@@ -504,7 +489,7 @@ Next, you'll see how to create plots of your data for checking assumptions, vali
 
 ------------------------------
 
-## Data Visualization in R
+# Data Visualization in R
 
 *Disclaimer: We will be using the functions in the ggplot2 package. R has powerful built-in plotting capabilities, but for this exercise, we will be using the ggplot2 package, which facilitates the creation of highly-informative plots of structured data.*
 
@@ -520,7 +505,13 @@ To create this plot with `ggplot2` we need to:
 2. Define aesthetics (`aes`) that map variables in the data to axes on the plot or to plotting size, shape, color, etc.;
 3. Add geometric objects; the graphical representation of the data in the plot (points, lines, polygons). To add a geometric objector or `geom`, use the `+` operator.
 
-```r
+```{r eval=F}
+install.packages('ggplot2')
+```
+
+```{r}
+library(ggplot2)
+
 china.surveys <- surveys %>%
   filter(country == 'China') %>%
   select(year, lifeExp)
@@ -531,20 +522,20 @@ ggplot(data = china.surveys)
 If this is all we instruct R to do, we see that the "Plots" tab in RStudio has appeared and a background has been rendered but nothing else.
 Basically, `ggplot2` has set up a plotting environment but nothing more.
 
-```r
+```{r}
 ggplot(data = china.surveys, aes(x = year, y = lifeExp))
 ```
 
 After we add the aesthetics, we can see that the `x` and `y` axes have been set up with the appropriate ranges and drawn on the plot along with a grid that defines the coordinate space they span.
 
-```r
+```{r}
 ggplot(data = china.surveys, aes(x = year, y = lifeExp)) +
   geom_line()
 ```
 
 After adding a line layer, we can see the data plotted.
 
-```r
+```{r}
 ggplot(data = china.surveys, aes(x = year, y = lifeExp)) +
   geom_point() +
   geom_line()
@@ -553,7 +544,7 @@ ggplot(data = china.surveys, aes(x = year, y = lifeExp)) +
 The `+` in the `ggplot2` package is particularly useful because it allows us to modify existing `ggplot` objects.
 **This means we can easily set up plot "templates" and conveniently explore different types of plots,** so the above plot can also be generated with code like this:
 
-```r
+```{r}
 base <- ggplot(data = china.surveys, aes(x = year, y = lifeExp))
 base + geom_bar(stat = 'identity')
 ```
@@ -563,14 +554,122 @@ Some things to note:
 - Anything you put in the `ggplot()` function can be seen by any `geom` layers that you add. i.e. these are universal plot settings. This includes the `x` and `y` axis you set up in `aes()`.
 - You can also specify aesthetics for a given geom independently of the aesthetics defined globally in the `ggplot()` function.
 
-```r
-ggplot(data = surveys_complete) +
- geom_point(aes(x = weight, y = hindfoot_length))
+```{r}
+ggplot(data = china.surveys) +
+ geom_point(aes(x = year, y = lifeExp))
 ```
 
-## Conclusion and Summary
+## Building Plots Iteratively
 
-### Other Resources
+Building plots with `ggplot2` is typically an iterative process.
+We start by defining the dataset we'll use, lay the axes, and choose a geometric object.
+
+```{r}
+ggplot(data = surveys, aes(x = gdpPercap, y = lifeExp)) +
+  geom_point()
+```
+
+Then, we start modifying this plot to extract more infromation from it.
+For instance, we can add transparency (alpha) to avoid overplotting.
+
+```{r}
+ggplot(data = surveys, aes(x = gdpPercap, y = lifeExp)) +
+  geom_point(alpha = 0.3)
+```
+
+We can also add a color to the point.
+**Note that when these options are set outside of the aesthetics (outside of the `aes()` function), they apply uniformly to all data points, whereas those inside the aesthetics vary with the values in the data.**
+
+```{r}
+ggplot(data = surveys, aes(x = gdpPercap, y = lifeExp)) +
+  geom_point(alpha = 0.3, color = 'blue')
+```
+
+**If we want color to vary with the values in our data frame, we need to assign a column of the data frame as the source for those values and then map those values onto an aesthetic within the `aes()` function.**
+For instance, let's let color vary by continent.
+
+```{r}
+ggplot(data = surveys, aes(x = gdpPercap, y = lifeExp)) +
+  geom_point(alpha = 0.3, aes(color = continent))
+```
+
+**Challenge: Changing the Scale**
+
+In many types of data, it is important to consider the *scale* of the observations.
+For example, it may be worth changing the scale of the axis to better distribute the observations in the space of the plot.
+Changing the scale of the axes is done similarly to adding/modifying other components (i.e., by incrementally adding commands).
+**Represent per-capita GDP on a log-10 scale.**
+For a hint, look up the help documentation on `scale_x_log10()`.
+
+------------------------------
+
+# Using Spatial Data in R
+
+Let's take a break from `dplyr` and `ggplot2` for a moment to look at how we can open and manage spatial data files in R.
+Later, we'll come back to `dplyr` and `ggplot2` when we want to clean, manipulate, and plot our spatial data.
+
+## Opening and Plotting Shapefiles
+
+Because our Gapminder dataset presents statistics on development for all countries of the world, we want to get a Shapefile that represents national units.
+We'll be using a dataset from [NaturalEarthData.com](https://www.naturalearthdata.com/downloads/110m-cultural-vectors/), a repository of vector data on cultural and physical features world-wide.
+
+There are two packages we'll use for opening and managing Shapefiles.
+The `rgdal` library is a set of general tools for reading both raster and vector data.
+The `sf` or "simple features" library has tools for both reading and manipulating vector data.
+The `sf` library depends on `rgdal` and so `rgdal` is automatically loaded when we load the `sf` library.
+
+```{r eval=F}
+install.packages('rgdal')
+install.packages('sf')
+```
+
+```{r warning=F, message=F}
+library(sf)
+```
+
+To import Shapefiles with the `sf` library, we use the `st_read()` function.
+
+```{r}
+countries <- st_read('data/r-spatial-countries/ne_110m_admin_0_countries.shp')
+```
+
+The `st_read()` function automatically stores additional information about the Shapefile we imported into R.
+We are particularly interested in the geospatial metadata that was printed out, which describes the format, coordinate reference system (CRS), extent, and other details.
+The key metadata we're interested in include:
+
+- **Object Type:** The class of the imported object;
+- **Coordinate Reference System (CRS):** The system describing how coordinates are organized in space, sometimes called the "projection" for projected coordinate systems;
+- **Extent:** The spatial extent, i.e., geographic area covered by the Shapefile.
+
+**Question: How many countries are represented in this Shapefile?**
+
+We can view these metdata using the following functions.
+First, we can see that each country is represented as a `MULTIPOLYGON` type; this means that a single row in the attribute table, corresponding to a single country, may be made up of one or more polygons.
+**Can you think of a reason why we might need to represent a single country using multiple polygons?**
+
+```{r}
+st_geometry_type(countries)
+```
+
+**Also, note at the bottom of this output is a list of the 18 different geometry types supported by this library;** they're listed here because our `MULTIPOLYGON` type is just one level in this category.
+
+```{r}
+st_crs(countries)
+```
+
+We can see the CRS is unprojected latitude-longitude coordinates, using the WGS84 datum.
+
+```{r}
+st_bbox(countries)
+```
+
+[Here's a figure depicting what the bounding box ("bbox") or extent of a vector dataset looks like.](https://datacarpentry.org/r-raster-vector-geospatial/images/dc-spatial-vector/spatial_extent.png)
+
+------------------------------
+
+# Conclusion and Summary
+
+## Other Resources
 
 * [Quick-R](http://www.statmethods.net/): "An easily accessible reference...for both current R users, and experienced users of other statistical packages...who would like to transition to R."
 * [RStudio Cheat Sheets](https://www.rstudio.com/resources/cheatsheets/): A list of informational graphics that help remind you how to use some advanced features in RStudio.
