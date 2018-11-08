@@ -21,7 +21,16 @@ The rest is original; [licensing information is available in the main repository
 This lesson is intended for people new to R that want to get a general introduction to R for spatial data analysis.
 Like the [Data Carpentry lesson on R](http://www.datacarpentry.org/R-ecology-lesson/01-intro-to-r.html), it is not intended to be an introduction to the R language.
 Rather, it introduces R as *an environment for data analysis;* it focuses on libraries that, once installed, can be used for general purpose data analysis (`dplyr` and `tidyr`).
-In this lesson, I tie in spatial data that can be visualized with `ggplot2` using additional libraries (`sp` and `rgdal`).
+In this lesson, I tie in spatial data that can be visualized with `ggplot2` using additional libraries (`sf` and `rgdal`).
+
+**The primary goals of this lesson are:**
+
+- Become more familiar with the basics of R and RStudio;
+- Understand R data frames and how they are used to store and organize tabular data;
+- Become familiar with the `dplyr` library and the split-apply-combine workflow, with pipes, for creating simple, general, and powerful workflows for tabular data;
+- Gain a basic understanding of plotting in R using the `ggplot2` library;
+- Understand how to read in Shapefiles in R using the `sf` library;
+- Know how to create a simple choropleth map in `ggplot2` by merging tabular and Shapefile datasets;
 
 ### About the Data
 
@@ -608,7 +617,7 @@ For a hint, look up the help documentation on `scale_x_log10()`.
 Let's take a break from `dplyr` and `ggplot2` for a moment to look at how we can open and manage spatial data files in R.
 Later, we'll come back to `dplyr` and `ggplot2` when we want to clean, manipulate, and plot our spatial data.
 
-## Opening and Plotting Shapefiles
+## Reading in and Understanding Shapefiles in R
 
 Because our Gapminder dataset presents statistics on development for all countries of the world, we want to get a Shapefile that represents national units.
 We'll be using a dataset from [NaturalEarthData.com](https://www.naturalearthdata.com/downloads/110m-cultural-vectors/), a repository of vector data on cultural and physical features world-wide.
@@ -664,6 +673,105 @@ st_bbox(countries)
 ```
 
 [Here's a figure depicting what the bounding box ("bbox") or extent of a vector dataset looks like.](https://datacarpentry.org/r-raster-vector-geospatial/images/dc-spatial-vector/spatial_extent.png)
+
+Finally, we can view all these metadata at once, again, by simply printing our dataset to the screen.
+
+```{r}
+countries
+```
+
+## Plotting Shapefiles in R
+
+Now, let's visualize the data in our `sf` object using the `ggplot2` package.
+
+```{r}
+ggplot() +
+  geom_sf(data = countries) +
+  coord_sf()
+```
+
+As with the previous `ggplot2` examples, we can customize the many aesthetics of our `countries` layer.
+
+```{r}
+ggplot() +
+  geom_sf(data = countries, color = 'darkgray', fill = 'white') +
+  coord_sf()
+```
+
+**What map projection is this?**
+When we have latitude-longitude data, the most basic plot we can construct treats every degree of latitude or longitude as an equal, rectangular unit of a grid; thus, it's called an "equirectangular" plot.
+
+If we want to plot just a portion of our Shapefile, we need to filter the dataset to that particular subset.
+As we saw earlier, this is something the `dplyr` library can help with.
+
+```{r}
+ggplot() +
+  geom_sf(data = filter(countries, REGION_UN == 'Asia')) +
+  labs(x = 'Longitude', y = 'Latitude', title = 'Countries in Asia')
+  coord_sf()
+```
+
+## Capstone: Creating a Choropleth Map
+
+Ultimately, we want to merge this Shapefile with our Gapminder data so we can create a choropleth map showing something like per-capita GDP across countries.
+Currently, there are quite a lot of extraneous attributes in our Shapefile.
+We'll want to create a minimal subset of columns, first.
+
+```{r}
+names(countries)
+head(countries)
+```
+
+I'll also rename some of these fields for clarity, including the ISO 3166-1 "alpha-3" code name, which is unique for each country.
+
+```{r}
+countries.asia <- countries %>%
+  select(name = NAME, a3_code = SOV_A3, region = REGION_UN, subregion = SUBREGION) %>%
+  filter(region == 'Asia')
+countries.asia
+```
+
+Whoops! What happened to our simple features object?
+We can't make a map with this data frame.
+Luckily, the `sf` library has a tool for creating a new simple features object from non-spatial tabular data.
+Two things are needed to get this table back into a simple features geometry:
+
+- First, make sure to include the `geometry` field of the original simple features object;
+- Second, convert the `geometry` field to a character string representation of each country's MULTIPOLYGON geometry.
+
+The `st_as_text()` function will create a string representation of the MULTIPOLYGON geometry.
+
+```{r}
+countries.asia.table <- countries %>%
+  select(name = NAME, a3_code = SOV_A3, region = REGION_UN, subregion = SUBREGION, geometry) %>%
+  mutate(geometry = st_as_text(geometry)) %>%
+  filter(region == 'Asia')
+
+head(countries.asia.table)
+```
+
+Now, we're ready to convert this data frame back into a simple features object with the `st_as_sf()` function.
+
+```{r}
+countries.asia <- st_as_sf(countries.asia.table, wkt = 'geometry')
+countries.asia
+```
+
+**The `st_as_sf()` function is also used for taking non-spatial datasets like CSV files and transforming them into spatial data.**
+
+```{r}
+oxford <- data.frame(name = 'Oxford, Ohio', x = -84.746667, y = 39.5075)
+st_as_sf(oxford, coords = c('x', 'y'), crs = st_crs(4326))
+```
+
+Now, we're ready to make a simple choropleth map; here's an example map of the subregions of Asia.
+Remember that to tell ggplot to base aesthetics on data *in the table,* we need to use the `aes()` function.
+
+```{r}
+ggplot() +
+  geom_sf(data = countries.asia, aes(fill = subregion)) +
+  coord_sf()
+```
 
 ------------------------------
 
