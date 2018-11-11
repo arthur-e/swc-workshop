@@ -8,8 +8,15 @@ output: html_document
 # R for Spatial Data Analysis
 
 ```{r setup, echo=F}
+library(dplyr, warn.conflicts = F)
+library(ggplot2)
+switch (Sys.info()[['sysname']],
+  Darwin = { os.base = '/Users/arthur/Repos/' },
+  Linux = { os.base = '/usr/local/dev/' })
+
 library(knitr)
-opts_knit$set(root.dir = '/usr/local/dev/swc-workshop')
+opts_knit$set(root.dir = paste0(os.base, 'swc-workshop'))
+setwd(paste0(os.base, 'swc-workshop'))
 ```
 
 Some of the material is repurposed from [the Data Carpentry lesson on Ecology](http://www.datacarpentry.org/R-ecology-lesson/01-intro-to-r.html), which is released under an open license.
@@ -731,37 +738,11 @@ countries.asia <- countries %>%
 countries.asia
 ```
 
-Whoops! What happened to our simple features object?
-We can't make a map with this data frame.
-Luckily, the `sf` library has a tool for creating a new simple features object from non-spatial tabular data.
-Two things are needed to get this table back into a simple features geometry:
-
-- First, make sure to include the `geometry` field of the original simple features object;
-- Second, convert the `geometry` field to a character string representation of each country's MULTIPOLYGON geometry.
-
-The `st_as_text()` function will create a string representation of the MULTIPOLYGON geometry.
+We're going to use `ggplot2` for plotting, again, so that we have more sophisticated control over the map we create.
+However, it's helpful to note that the built-in R function `plot()` does work with the `sf` objects; by default, it will create a very simple choropleth map for every column in the attribute table, which might be useful for exploring patterns over multiple variables.
 
 ```{r}
-countries.asia.table <- countries %>%
-  select(name = NAME, a3_code = SOV_A3, region = REGION_UN, subregion = SUBREGION, geometry) %>%
-  mutate(geometry = st_as_text(geometry)) %>%
-  filter(region == 'Asia')
-
-head(countries.asia.table)
-```
-
-Now, we're ready to convert this data frame back into a simple features object with the `st_as_sf()` function.
-
-```{r}
-countries.asia <- st_as_sf(countries.asia.table, wkt = 'geometry')
-countries.asia
-```
-
-**The `st_as_sf()` function is also used for taking non-spatial datasets like CSV files and transforming them into spatial data.**
-
-```{r}
-oxford <- data.frame(name = 'Oxford, Ohio', x = -84.746667, y = 39.5075)
-st_as_sf(oxford, coords = c('x', 'y'), crs = st_crs(4326))
+plot(countries.asia)
 ```
 
 Now, we're ready to make a simple choropleth map; here's an example map of the subregions of Asia.
@@ -773,9 +754,52 @@ ggplot() +
   coord_sf()
 ```
 
+### Joining Data
+
+**In order to plot our Gapminder data using the Shapefile we imported, we're going to have to join the two datasets together.**
+With the `dplyr` library, this can be accomplished with functions like `left_join()`.
+
+```{r}
+surveys.2007 <- filter(surveys, year == 2007)
+
+countries.asia.2007 <- countries.asia %>% 
+  rename(country = name) %>%
+  left_join(surveys.2007, by = 'country')
+```
+
+Unfortunately, the Gapminder dataset does not include all of the countries of the world, due to changing national status and boundaries.
+We might wonder how many countries have been left out of this join; we can use `dplyr` again to query this.
+
+```{r}
+countries.asia.2007 %>%
+  filter(is.na(lifeExp)) %>%
+  View
+```
+
+### Capstone Challenge: Choropleth of Gapminder Data
+
+Now, you can apply what you've learned about:
+
+- Grouping and summarizing a data frame using `dplyr`;
+- Plotting a Shapefile with `ggplot2`;
+- Joining two datasets together with `dplyr` and `left_join()`;
+
+**Make a choropleth map of either life expectancy (`lifeExp`) or per-capita GDP (`gdpPercap`) in Asia in 2007, or in any other region of the world in any year, using what you've learned.**
+
 ------------------------------
 
 # Conclusion and Summary
+
+## Related Topics
+
+### Creating Simple Features from Text Data
+
+**The `st_as_sf()` function is also used for taking non-spatial datasets like CSV files and transforming them into spatial data.**
+
+```{r}
+oxford <- data.frame(name = 'Oxford, Ohio', x = -84.746667, y = 39.5075)
+st_as_sf(oxford, coords = c('x', 'y'), crs = st_crs(4326))
+```
 
 ## Other Resources
 
