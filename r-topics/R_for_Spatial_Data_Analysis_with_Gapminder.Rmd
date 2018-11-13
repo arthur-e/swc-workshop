@@ -23,6 +23,28 @@ Some of the material is repurposed from [the Data Carpentry lesson on Ecology](h
 Some is adapted from [Tracy K. Teal's lesson](http://tracykteal.github.io/r-novice-gapminder/) and [John Moreau's workshop at the Federal Reserve Board](https://github.com/JohnRMoreau/2016-04-07-FederalReserveBoard/wiki) under a CC-By-SA license.
 The rest is original; [licensing information is available in the main repository](https://github.com/arthur-e/swc-workshop).
 
+## Setup and Installation
+
+[Starting from these instructions](https://datacarpentry.org/geospatial-workshop/setup.html)...
+
+Users should:
+
+1. Skip the "Data" download in the Setup instructions; start with Option A: Local Installation (recommended) or Option B. We are not using all of the same R packages, however. The only R packages that are needed are:
+- `dplyr`
+- `ggplot2`
+- `rgdal`
+- `sf`
+2. Test that the installation was successful by loading the libraries in RStudio:
+```r
+library(dplyr)
+library(ggplot2)
+library(rgdal)
+library(sf)
+```
+3. Once everything is installed successfully, download these two data files to their Desktop:
+- https://raw.githubusercontent.com/arthur-e/swc-workshop/master/data/gapminder-FiveYearData.csv ("File" > "Save as...")
+- https://github.com/arthur-e/swc-workshop/blob/master/data/ne_110m_admin_0_countries.zip (Click "Download" button)
+
 ## Overview
 
 This lesson is intended for people new to R that want to get a general introduction to R for spatial data analysis.
@@ -762,7 +784,7 @@ With the `dplyr` library, this can be accomplished with functions like `left_joi
 ```{r}
 surveys.2007 <- filter(surveys, year == 2007)
 
-countries.asia.2007 <- countries.asia %>% 
+countries.asia.2007 <- countries.asia %>%
   rename(country = name) %>%
   left_join(surveys.2007, by = 'country')
 ```
