@@ -375,7 +375,7 @@ Before you use a package for the first time you need to install it on your machi
 R packages can be installed using the `install.packages()` function.
 Let's try to install the `dplyr` package, which provides advanced data querying and aggregation.
 
-```{r}
+```{r eval=F}
 install.packages('dplyr')
 ```
 
@@ -445,7 +445,7 @@ china.surveys <- surveys %>%
 
 **Why does one of the following example not work?**
 
-```{r}
+```{r eval=F}
 surveys %>%
   select(year, lifeExp) %>%
   filter(country == 'China')
@@ -500,7 +500,7 @@ surveys %>%
 
 Note that we can group by more than one variable at a time.
 
-```{r}
+```{r eval=F}
 surveys %>%
   group_by(continent, year) %>%
   summarize(median(lifeExp)) %>%
@@ -792,7 +792,7 @@ countries.asia.2007 <- countries.asia %>%
 Unfortunately, the Gapminder dataset does not include all of the countries of the world, due to changing national status and boundaries.
 We might wonder how many countries have been left out of this join; we can use `dplyr` again to query this.
 
-```{r}
+```{r eval=F}
 countries.asia.2007 %>%
   filter(is.na(lifeExp)) %>%
   View
